@@ -1,1788 +1,791 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Brush } from 'recharts';
-import { Package, TrendingUp, TrendingDown, Calendar, FileText, User, Trash2, X, FlaskConical, History, BarChart3, PlayCircle, AlertTriangle, LoaderCircle } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWK FishScales - ผู้นำนวัตกรรมเกล็ดปลาคุณภาพระดับสากล</title>
+    
+    <!-- Google Fonts: Prompt for modern Thai typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-// LoadingOverlay Component
-const LoadingOverlay = ({ message }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center z-50">
-    <LoaderCircle className="w-16 h-16 text-white animate-spin mb-4" />
-    <p className="text-white text-xl font-semibold">{message}</p>
-  </div>
-);
-
-// CustomAlertModal Component
-const CustomAlertModal = ({ title, message, onClose, onConfirm, showCancel = false, confirmText = 'ตกลง', cancelText = 'ยกเลิก', showPasswordInput = false, onPasswordChange, passwordValue, correctPassword }) => {
-  const [error, setError] = useState('');
-
-  const handlePasswordInputChange = (e) => {
-    setError('');
-    onPasswordChange(e.target.value);
-  };
-
-  const handleConfirmAction = () => {
-    if (showPasswordInput) {
-      if (passwordValue === correctPassword) {
-        if (onConfirm) onConfirm();
-        onClose();
-      } else {
-        setError('รหัสผ่านผิด');
-        onPasswordChange('');
-      }
-    } else {
-      if (onConfirm) onConfirm();
-      onClose();
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-xs w-full p-8 shadow-2xl transform scale-100 transition-transform duration-300 ease-out relative">
-        <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
-          <X size={24} />
-        </button>
-        <div className="text-center">
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">{title}</h3>
-          {message && <p className="text-gray-700 mb-6 whitespace-pre-wrap">{message}</p>}
-          
-          {showPasswordInput ? (
-            <>
-              <div className="mb-6">
-                <input
-                  type="password"
-                  placeholder="P A S S W O R D"
-                  autoFocus
-                  className={`w-full px-4 py-3 border-2 rounded-lg text-lg text-center ${error ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                  value={passwordValue}
-                  onChange={handlePasswordInputChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleConfirmAction();
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            800: '#075985',
+                            900: '#0c4a6e', // Deep Ocean Blue
+                        },
+                        accent: {
+                            gold: '#d4af37',
+                        }
                     }
-                  }}
-                />
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-              </div>
-              <div className="flex gap-4">
-                <button onClick={onClose} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                  {cancelText}
-                </button>
-                <button onClick={handleConfirmAction} className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors">
-                  {confirmText}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="flex gap-4">
-              {showCancel && (
-                <button onClick={onClose} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                  {cancelText}
-                </button>
-              )}
-              <button onClick={handleConfirmAction} className={`flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors ${showCancel ? '' : 'w-full'}`}>
-                {confirmText}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+                }
+            }
+        }
+    </script>
 
-// Custom Tooltip for Charts
-const CustomTooltip = ({ active, payload, label, xAxisKey, year, month }) => {
-  if (active && payload && payload.length) {
-    let formattedLabel = label;
-    if (xAxisKey === 'day' && year && month !== null && month >= 0) {
-      const date = new Date(year, month, label);
-      if (!isNaN(date)) {
-        formattedLabel = date.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short' });
-      }
-    }
-
-    return (
-      <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-        <p className="font-bold mb-2">{`${formattedLabel}`}</p>
-        {payload.map((entry, index) => (
-          <p key={`item-${index}`} style={{ color: entry.color }}>
-            {`${entry.name} : ${entry.value.toLocaleString()}`}
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
-
-const App = () => {
-  // Google Sheets configuration
-  const GOOGLE_SHEETS_CONFIG = {
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbyfxWs81WEsrizNnTi82tZAOH_EHX1hKnvUoqsARpYch3TTjEqz5oepiol_vWQ4lK3G0g/exec',
-    spreadsheetId: '18_aq1sA-m7W0ZPOvPs1RDtEoZUIY-9PabPghKo6ZfjE'
-  };
-
-  // Helper to format date to YYYY-MM-DD for input type="date"
-  const formatDateForInput = (date) => {
-    const d = new Date(date);
-    let month = '' + (d.getMonth() + 1);
-    let day = '' + d.getDate();
-    const year = d.getFullYear();
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-    return [year, month, day].join('-');
-  };
-  
-  const parseCSDateString = (dateInput) => {
-    if (!dateInput) return new Date('invalid');
-    if (dateInput instanceof Date) return dateInput;
-
-    if (typeof dateInput === 'string') {
-        const parts = dateInput.split(', ');
-        if (parts.length !== 2) return new Date('invalid');
-
-        const dateParts = parts[0].split('/');
-        const timeParts = parts[1].split(':');
-
-        if (dateParts.length !== 3 || (timeParts.length !== 2 && timeParts.length !== 3)) return new Date('invalid');
+    <style>
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
         
-        const day = parseInt(dateParts[0], 10);
-        const month = parseInt(dateParts[1], 10) - 1; // JS month is 0-indexed
-        const year = parseInt(dateParts[2], 10);
-        const hours = parseInt(timeParts[0], 10);
-        const minutes = parseInt(timeParts[1], 10);
-        const seconds = timeParts.length === 3 ? parseInt(timeParts[2], 10) : 0;
-
-        const date = new Date(year, month, day, hours, minutes, seconds);
-        if (isNaN(date.getTime())) {
-            return new Date('invalid');
+        /* Animations */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        return date;
-    }
-
-    return new Date('invalid');
-  };
-
-  const formatDateTimeForDisplay = (date) => {
-    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return '';
-    return date.toLocaleString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    }).replace(',', '');
-  };
-
-  // Initial values for filters
-  const currentYear = new Date().getFullYear();
-  const currentMonth = (new Date().getMonth() + 1).toString();
-  const todayFormatted = formatDateForInput(new Date());
-
-  // States for managing data and UI
-  const [records, setRecords] = useState([]);
-  const [productionRecords, setProductionRecords] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
-
-  // Form states
-  const [formData, setFormData] = useState({ name: '', status: '', quantity: '', images: [], selectedDate: todayFormatted });
-  const [todayProduced, setTodayProduced] = useState('');
-
-  // UI states
-  const [currentPage, setCurrentPage] = useState('inventory');
-  const [selectedRecord, setSelectedRecord] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [debounceTimer, setDebounceTimer] = useState(null);
-  const [currentImagePreview, setCurrentImagePreview] = useState(null);
-
-  // Alert modal states
-  const [showAlertModal, setShowAlertModal] = useState(false);
-  const [alertTitle, setAlertTitle] = useState('');
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertOnConfirm, setAlertOnConfirm] = useState(null);
-  const [alertShowCancel, setAlertShowCancel] = useState(false);
-  const [alertConfirmText, setAlertConfirmText] = useState('ตกลง');
-  const [alertCancelText, setAlertCancelText] = useState('ยกเลิก');
-  const [alertPasswordValue, setAlertPasswordValue] = useState('');
-  const [alertShowPasswordInput, setAlertShowPasswordInput] = useState(false);
-  const [alertCorrectPassword, setAlertCorrectPassword] = useState('');
-
-  // Filter states for records table
-  const [filterYear, setFilterYear] = useState(currentYear.toString()); 
-  const [filterMonth, setFilterMonth] = useState(currentMonth); 
-  const [filterStatus, setFilterStatus] = useState('');
-
-  // Filter states for production table
-  const [productionFilterYear, setProductionFilterYear] = useState(currentYear.toString());
-  const [productionFilterMonth, setProductionFilterMonth] = useState(currentMonth);
-
-  // Filter states for general chart
-  const [chartYear, setChartYear] = useState(currentYear.toString());
-  const [isChartYearFilterActive, setIsChartYearFilterActive] = useState(true); 
-  const [isChartMonthFilterActive, setIsChartMonthFilterActive] = useState(true);
-  const [chartSelectedMonth, setChartSelectedMonth] = useState(currentMonth);
-  const [chartStatusFilter, setChartStatusFilter] = useState('');
-
-  // Filter states for production chart
-  const [productionChartYear, setProductionChartYear] = useState(currentYear.toString());
-  const [productionChartMonth, setProductionChartMonth] = useState(currentMonth);
-  const [isProductionChartYearFilterActive, setIsProductionChartYearFilterActive] = useState(true); 
-  const [isProductionChartMonthFilterActive, setIsProductionChartMonthFilterActive] = useState(true);
-
-  // Effect to reset modal-related states when page changes
-  useEffect(() => {
-    setShowModal(false);
-    setSelectedRecord(null);
-    setShowAlertModal(false);
-    setAlertTitle('');
-    setAlertMessage('');
-    setAlertOnConfirm(null);
-    setAlertShowCancel(false);
-    setAlertConfirmText('ตกลง');
-    setAlertCancelText('ยกเลิก');
-    setAlertPasswordValue('');
-    setAlertShowPasswordInput(false);
-    setCurrentImagePreview(null);
-  }, [currentPage]);
-
-  // Google Sheets API functions
-  const sendToGoogleSheets = async (data, type) => {
-    if (!GOOGLE_SHEETS_CONFIG.webAppUrl) {
-      console.warn('Google Sheets not configured');
-      return false;
-    }
-    try {
-      const payload = { action: 'add', type, data };
-      await fetch(GOOGLE_SHEETS_CONFIG.webAppUrl, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        mode: 'no-cors'
-      });
-      console.log('Add request sent successfully.');
-      setConnectionStatus('connected');
-      return true;
-    } catch (error) {
-      console.error('Error sending to Google Sheets:', error);
-      setConnectionStatus('error');
-      openAlert('แจ้งเตือน', 'บันทึกข้อมูลในเครื่องแล้ว แต่ไม่สามารถซิงค์กับ Google Sheets ได้ในขณะนี้');
-      return false;
-    }
-  };
-
-    const deleteFromGoogleSheets = async (id, type) => {
-        if (!GOOGLE_SHEETS_CONFIG.webAppUrl) {
-            console.warn('Google Sheets not configured');
-            return false;
-        }
-        setLoadingMessage('กำลังลบข้อมูล...');
-        setIsLoading(true);
-        try {
-            const payload = { action: 'delete', type, data: { id } };
-            await fetch(GOOGLE_SHEETS_CONFIG.webAppUrl, {
-                method: 'POST',
-                body: JSON.stringify(payload),
-                mode: 'no-cors'
-            });
-            console.log(`Delete request for id ${id} in ${type} sent successfully.`);
-            return true;
-        } catch (error) {
-            console.error('Error deleting from Google Sheets:', error);
-            openAlert('ข้อผิดพลาด', 'ไม่สามารถลบข้อมูลจาก Google Sheets ได้ แต่ข้อมูลจะถูกลบออกจากหน้าเว็บนี้');
-            return false;
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const clearSheetInGoogleSheets = async (sheetName) => {
-        if (!GOOGLE_SHEETS_CONFIG.webAppUrl) {
-            console.warn('Google Sheets not configured');
-            return false;
-        }
-        setLoadingMessage('กำลังล้างข้อมูล...');
-        setIsLoading(true);
-        try {
-            const payload = { action: 'clearSheet', type: sheetName };
-            await fetch(GOOGLE_SHEETS_CONFIG.webAppUrl, {
-                method: 'POST',
-                body: JSON.stringify(payload),
-                mode: 'no-cors'
-            });
-            console.log(`Clear sheet request for ${sheetName} sent successfully.`);
-            return true;
-        } catch (error) {
-            console.error(`Error clearing ${sheetName} in Google Sheets:`, error);
-            openAlert('ข้อผิดพลาด', `ไม่สามารถล้างข้อมูลในชีต ${sheetName} ได้`);
-            return false;
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-  const loadFromGoogleSheets = async (manageLoadingState = true) => {
-    if (!GOOGLE_SHEETS_CONFIG.webAppUrl) {
-      console.warn('Google Sheets not configured');
-      return;
-    }
-    if(manageLoadingState) {
-      setLoadingMessage('กำลังโหลดข้อมูล...');
-      setIsLoading(true);
-    }
-    try {
-      console.log('Loading from Google Sheets...');
-      
-      const url = `${GOOGLE_SHEETS_CONFIG.webAppUrl}?action=load&t=${Date.now()}`;
-      
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Load failed with status: ${response.status}`);
-      }
-
-      const text = await response.text();
-      if (!text) throw new Error('Empty response from Google Sheets');
-      
-      const result = JSON.parse(text);
-      
-      if (result.success) {
-        if (result.data && result.data.records) {
-          const parsedRecords = result.data.records.map(record => {
-            let imagesArray = [];
-            if (record.images && typeof record.images === 'string') {
-              try {
-                // First, try to parse it as a JSON array (for new data)
-                imagesArray = JSON.parse(record.images);
-              } catch (e) {
-                // If parsing fails, it might be an old single Base64 string
-                if (record.images.startsWith('data:image')) {
-                  imagesArray = [record.images];
-                }
-              }
-            }
-            return {
-              ...record,
-              quantity: parseFloat(String(record.quantity).replace(/,/g, '')) || 0,
-              timestamp: parseCSDateString(record.timestamp),
-              images: imagesArray
-            };
-          });
-          setRecords(parsedRecords);
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        if (result.data && result.data.production) {
-          const parsedProduction = result.data.production.map(record => ({
-            ...record,
-            bags: parseInt(String(record.bags).replace(/,/g, ''), 10) || 0,
-            kilos: parseInt(String(record.kilos).replace(/,/g, ''), 10) || 0,
-            timestamp: parseCSDateString(record.timestamp)
-          }));
-          setProductionRecords(parsedProduction);
+        .gradient-text {
+            background: linear-gradient(to right, #0284c7, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        setConnectionStatus('connected');
-        console.log('Successfully loaded data from Google Sheets');
-      } else {
-        throw new Error(result.error || 'Unknown error from Google Sheets');
-      }
-    } catch (error) {
-      console.error('Error loading from Google Sheets:', error);
-      if (error instanceof TypeError) {
-        openAlert(
-          'ข้อผิดพลาดในการเชื่อมต่อ', 
-          'ไม่สามารถโหลดข้อมูลจาก Google Sheets ได้ กรุณาตรวจสอบการตั้งค่าสคริปต์ (ต้อง Deploy และให้สิทธิ์การเข้าถึงแก่ "ทุกคน") และการเชื่อมต่ออินเทอร์เน็ตของคุณ'
-        );
-      } else {
-        openAlert('เกิดข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลได้: ' + error.message);
-      }
-      setConnectionStatus('disconnected');
-      console.log('Using local data only');
-    } finally {
-      if(manageLoadingState) {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    loadFromGoogleSheets();
-  }, []);
-
-  const openAlert = (title, message, onConfirm = null, showCancel = false, confirmText = 'ตกลง', cancelText = 'ยกเล็ก', showPasswordInput = false, correctPassword = '') => {
-    setAlertTitle(title);
-    setAlertMessage(message);
-    setAlertOnConfirm(() => onConfirm);
-    setAlertShowCancel(showCancel);
-    setAlertConfirmText(confirmText);
-    setAlertCancelText(cancelText);
-    setAlertPasswordValue('');
-    setAlertShowPasswordInput(showPasswordInput);
-    setAlertCorrectPassword(correctPassword);
-    setShowAlertModal(true);
-  };
-
-  const closeAlert = () => {
-    setShowAlertModal(false);
-    setAlertTitle('');
-    setAlertMessage('');
-    setAlertOnConfirm(null);
-    setAlertShowCancel(false);
-    setAlertConfirmText('ตกลง');
-    setAlertCancelText('ยกเลิก');
-    setAlertPasswordValue('');
-    setAlertShowPasswordInput(false);
-    setAlertCorrectPassword('');
-  };
-
-  const handleTodayProducedChange = (e) => {
-    const value = e.target.value;
-    setTodayProduced(value);
-    setShowConfirmModal(false);
-    if (debounceTimer) clearTimeout(debounceTimer);
-    if (value && value > 0) {
-      setDebounceTimer(setTimeout(() => setShowConfirmModal(true), 1000));
-    }
-  };
-
-  const handleConfirmSubmit = () => {
-    handleProductionSubmit();
-    setShowConfirmModal(false);
-  };
-
-  const handleCancelSubmit = () => {
-    setTodayProduced('');
-    setShowConfirmModal(false);
-    if (debounceTimer) clearTimeout(debounceTimer);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'status') {
-      setFormData(prev => ({ ...prev, [name]: value, name: '' }));
-    } else if (name === 'name' && formData.status === 'ขายออก') {
-      return;
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleImageChange = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 1) {
-      openAlert('ข้อผิดพลาด', 'สามารถเลือกรูปภาพได้เพียง 1 รูปเท่านั้น');
-      e.target.value = null;
-      return;
-    }
-    
-    const imagePromises = files.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
-    });
-    
-    const base64Images = await Promise.all(imagePromises);
-    setFormData(prev => ({ ...prev, images: base64Images }));
-  };
-
-  const removeImage = (index) => {
-    setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
-  };
-
-  const handleDetailsClick = (record) => {
-    setSelectedRecord(record);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedRecord(null);
-    setCurrentImagePreview(null);
-  };
-
-  const getTodayTotalProduction = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return productionRecords.reduce((total, record) => {
-      const recordDate = new Date(record.timestamp);
-      recordDate.setHours(0, 0, 0, 0);
-      return recordDate.getTime() === today.getTime() ? total + record.bags : total;
-    }, 0);
-  };
-
-  const getMonthlyTotalProduction = useMemo(() => {
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-    return productionRecords.reduce((total, record) => {
-      const recordDate = new Date(record.timestamp);
-      if (recordDate.getFullYear() === currentYear && recordDate.getMonth() === currentMonth) {
-        return total + record.bags;
-      }
-      return total;
-    }, 0);
-  }, [productionRecords]);
-
-  const readyForShipping = useMemo(() => {
-    const totalProducedBags = productionRecords.reduce((total, record) => total + record.bags, 0);
-    const totalSoldBags = records
-        .filter(record => record.status === 'ขายออก')
-        .reduce((total, record) => total + (record.quantity / 10), 0);
-    return totalProducedBags - totalSoldBags;
-  }, [records, productionRecords]);
-
-  const handleProductionSubmit = async () => {
-    if (!todayProduced || todayProduced <= 0) {
-      openAlert('ข้อผิดพลาด', 'กรุณากรอกจำนวนที่ทำได้วันนี้');
-      return;
-    }
-    const newProductionRecord = {
-      bags: parseInt(todayProduced),
-      kilos: parseInt(todayProduced) * 10
-    };
-    
-    setLoadingMessage('กำลังบันทึกข้อมูล...');
-    setIsLoading(true);
-    const success = await sendToGoogleSheets(newProductionRecord, 'Production');
-    if (success) {
-      setTimeout(async () => {
-          await loadFromGoogleSheets(false);
-          setIsLoading(false);
-          openAlert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว');
-      }, 2500);
-    } else {
-        setIsLoading(false);
-    }
-    setTodayProduced('');
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.quantity || !formData.status || (formData.status === 'ซื้อเข้า' && !formData.name)) {
-      openAlert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน');
-      return;
-    }
-
-    let finalQuantityForRecord = parseFloat(formData.quantity);
-    
-    if (formData.status === 'ขายออก') {
-      const soldBags = parseFloat(formData.quantity);
-      if (soldBags > readyForShipping) {
-        openAlert('ข้อผิดพลาด', `จำนวนที่ขายออก (${soldBags.toLocaleString()} กระสอบ) เกินกว่าจำนวนของพร้อมส่ง (${readyForShipping.toLocaleString()} กระสอบ)`);
-        return;
-      }
-      finalQuantityForRecord = soldBags * 10;
-    }
-
-    const newRecord = {
-      name: formData.name || 'ลูกค้า',
-      status: formData.status,
-      quantity: finalQuantityForRecord,
-      images: formData.images
-    };
-    
-    setLoadingMessage('กำลังบันทึกข้อมูล...');
-    setIsLoading(true);
-    const success = await sendToGoogleSheets(newRecord, 'Records');
-    if (success) {
-        setTimeout(async () => {
-            await loadFromGoogleSheets(false);
-            setIsLoading(false);
-            openAlert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว');
-        }, 2500);
-    } else {
-        setIsLoading(false);
-    }
-    setFormData({ name: '', status: '', quantity: '', images: [], selectedDate: todayFormatted });
-  };
-
-    const handleDeleteRecord = (id, status, quantity) => {
-        openAlert(
-            'ยืนยันการลบ',
-            `คุณต้องการลบรายการ ID: ${id}\nกรุณากรอกรหัสผ่านเพื่อยืนยัน`,
-            async () => {
-                await deleteFromGoogleSheets(id, 'Records');
-                setRecords(prevRecords => prevRecords.filter(record => record.id !== id));
-                openAlert('สำเร็จ', 'ลบข้อมูลเรียบร้อยแล้ว');
-            },
-            true, 'ลบ', 'ยกเลิก', true, '4455'
-        );
-    };
-
-    const handleDeleteProductionRecord = (id, bags) => {
-        openAlert(
-            'ยืนยันการลบ',
-            `คุณต้องการลบรายการ ID: ${id}\nกรุณากรอกรหัสผ่านเพื่อยืนยัน`,
-            async () => {
-                await deleteFromGoogleSheets(id, 'Production');
-                setProductionRecords(prevRecords => prevRecords.filter(record => record.id !== id));
-                openAlert('สำเร็จ', 'ลบข้อมูลเรียบร้อยแล้ว');
-            },
-            true, 'ลบ', 'ยกเลิก', true, '4455'
-        );
-    };
-
-    const handleClearPageData = (sheetName) => {
-        openAlert(
-            `ยืนยันการล้างข้อมูลหน้า${sheetName === 'Production' ? 'ปริมาณสินค้า' : 'รายงานสถานะ'}`,
-            'การกระทำนี้ไม่สามารถย้อนกลับได้ ข้อมูลทั้งหมดในหน้านี้จะถูกลบอย่างถาวร กรุณากรอกรหัสผ่านเพื่อยืนยัน',
-            async () => {
-                const success = await clearSheetInGoogleSheets(sheetName);
-                if (success) {
-                    if (sheetName === 'Production') {
-                        setProductionRecords([]);
-                    } else if (sheetName === 'Records') {
-                        setRecords([]);
-                    }
-                    openAlert('สำเร็จ', 'ข้อมูลในหน้านี้ถูกล้างเรียบร้อยแล้ว');
-                }
-            },
-            true,
-            'ยืนยันการล้างข้อมูล',
-            'ยกเลิก',
-            true,
-            '062261'
-        );
-    };
-
-  const getFilteredRecords = () => {
-    let filtered = [...records];
-    if (filterYear) {
-      const selectedYear = parseInt(filterYear);
-      filtered = filtered.filter(record => record.timestamp.getFullYear() === selectedYear);
-    }
-    if (filterMonth) {
-      filtered = filtered.filter(record => (record.timestamp.getMonth() + 1).toString() === filterMonth);
-    }
-    if (filterStatus) {
-      filtered = filtered.filter(record => record.status === filterStatus);
-    }
-    return filtered.reverse();
-  };
-
-  const getFilteredProductionRecords = () => {
-    let filtered = [...productionRecords];
-    if (productionFilterYear) {
-      const selectedYear = parseInt(productionFilterYear);
-      filtered = filtered.filter(record => record.timestamp.getFullYear() === selectedYear);
-    }
-    if (productionFilterMonth) {
-      filtered = filtered.filter(record => (record.timestamp.getMonth() + 1).toString() === productionFilterMonth);
-    }
-    return filtered.reverse();
-  };
-
-  const getAvailableYears = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let year = 2020; year <= currentYear + 5; year++) {
-      years.push(year);
-    }
-    return years.sort((a, b) => b - a);
-  };
-
-  const getThaiMonthName = (monthNumber) => {
-    const monthNames = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-      'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-      'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ];
-    return monthNames[parseInt(monthNumber) - 1];
-  };
-
-  const prepareChartData = (dataRecords, filterConfig, dataType) => {
-    let filteredData = [...dataRecords];
-    let xAxisKey = '';
-    let aggregatedData = {};
-    let totalSummary = { totalBuyIn: 0, totalSellOut: 0 };
-
-    const selectedYear = parseInt(filterConfig.year);
-    const selectedMonth = parseInt(filterConfig.month) - 1;
-
-    if (filterConfig.yearActive) {
-      filteredData = filteredData.filter(record => record.timestamp.getFullYear() === selectedYear);
-    }
-
-    if (filterConfig.monthActive) {
-      filteredData = filteredData.filter(record => record.timestamp.getMonth() === selectedMonth);
-    }
-
-    if (filterConfig.yearActive && filterConfig.monthActive) {
-      xAxisKey = 'day';
-      const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-      for (let day = 1; day <= daysInMonth; day++) {
-        aggregatedData[day] = { day: day };
-        if (dataType === 'general') {
-          aggregatedData[day]['ซื้อเข้า'] = 0;
-          aggregatedData[day]['ขายออก'] = 0;
-        } else {
-          aggregatedData[day]['จำนวนกระสอบที่ผลิตได้'] = 0;
+        /* Hero Overlay */
+        .hero-bg {
+            background-image: linear-gradient(to right, rgba(12, 74, 110, 0.9), rgba(12, 74, 110, 0.6)), url('https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
-      }
-    } else if (filterConfig.yearActive && !filterConfig.monthActive) {
-      xAxisKey = 'month';
-      const monthOrder = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-      monthOrder.forEach(monthName => {
-        aggregatedData[monthName] = { month: monthName };
-        if (dataType === 'general') {
-          aggregatedData[monthName]['ซื้อเข้า'] = 0;
-          aggregatedData[monthName]['ขายออก'] = 0;
-        } else {
-          aggregatedData[monthName]['จำนวนกระสอบที่ผลิตได้'] = 0;
+
+        /* Parallax Section */
+        .parallax-bg {
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=2070&auto=format&fit=crop');
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
         }
-      });
-    } else {
-      xAxisKey = 'year';
-      if (dataType === 'production' && filterConfig.monthActive && !filterConfig.yearActive) {
-        xAxisKey = 'period';
-        const allYearsInRecords = [...new Set(dataRecords.map(r => r.timestamp.getFullYear()))].sort((a, b) => a - b);
-        allYearsInRecords.forEach(y => {
-          const monthName = new Date(y, selectedMonth, 1).toLocaleDateString('th-TH', { month: 'long' });
-          const key = `${monthName} ${y}`;
-          aggregatedData[key] = { period: key, 'จำนวนกระสอบที่ผลิตได้': 0 };
-        });
-      } else {
-        const allYearsInRecords = [...new Set(dataRecords.map(r => r.timestamp.getFullYear()))].sort((a, b) => a - b);
-        allYearsInRecords.forEach(y => {
-          aggregatedData[y] = { year: y };
-          if (dataType === 'general') {
-            aggregatedData[y]['ซื้อเข้า'] = 0;
-            aggregatedData[y]['ขายออก'] = 0;
-          } else {
-            aggregatedData[y]['จำนวนกระสอบที่ผลิตได้'] = 0;
-          }
-        });
-      }
-    }
 
-    filteredData.forEach(record => {
-      let key;
-      if (xAxisKey === 'day') {
-        key = record.timestamp.getDate();
-      } else if (xAxisKey === 'month') {
-        key = record.timestamp.toLocaleDateString('th-TH', { month: 'long' });
-      } else if (xAxisKey === 'period') {
-        const monthName = new Date(record.timestamp.getFullYear(), record.timestamp.getMonth(), 1).toLocaleDateString('th-TH', { month: 'long' });
-        key = `${monthName} ${record.timestamp.getFullYear()}`;
-      } else {
-        key = record.timestamp.getFullYear();
-      }
-
-      if (aggregatedData[key]) {
-        if (dataType === 'general') {
-          if (filterConfig.statusFilter === '' || record.status === filterConfig.statusFilter) {
-            if (record.status === 'ซื้อเข้า') {
-              aggregatedData[key]['ซื้อเข้า'] += record.quantity;
-              if (filterConfig.yearActive && filterConfig.monthActive) {
-                totalSummary.totalBuyIn += record.quantity;
-              }
-            } else {
-              aggregatedData[key]['ขายออก'] += record.quantity;
-              if (filterConfig.yearActive && filterConfig.monthActive) {
-                totalSummary.totalSellOut += record.quantity;
-              }
-            }
-          }
-        } else {
-          aggregatedData[key]['จำนวนกระสอบที่ผลิตได้'] += record.bags;
+        /* Bubble Animation */
+        .bubble {
+            position: absolute;
+            bottom: -20px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp linear infinite;
         }
-      }
-    });
 
-    let finalChartData = Object.values(aggregatedData);
-
-    if (xAxisKey === 'month') {
-      const monthOrder = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-      finalChartData.sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
-    } else if (xAxisKey === 'year' || xAxisKey === 'day') {
-      finalChartData.sort((a, b) => a[xAxisKey] - b[xAxisKey]);
-    } else if (xAxisKey === 'period') {
-      finalChartData.sort((a, b) => {
-        const yearA = parseInt(a.period.split(' ')[1]);
-        const yearB = parseInt(b.period.split(' ')[1]);
-        return yearA - yearB;
-      });
-    }
-
-    if (dataType === 'general') {
-      return { data: finalChartData, xAxisKey: xAxisKey, summary: totalSummary };
-    } else {
-      return finalChartData;
-    }
-  };
-
-  const filteredRecords = useMemo(() => getFilteredRecords(), [records, filterYear, filterMonth, filterStatus]);
-  const filteredProductionRecords = useMemo(() => getFilteredProductionRecords(), [productionRecords, productionFilterYear, productionFilterMonth]);
-  const availableYears = useMemo(() => getAvailableYears(), []);
-  
-  const monthlyStats = useMemo(() => {
-    let filtered = records;
-    if (filterYear) {
-      const selectedYear = parseInt(filterYear);
-      filtered = filtered.filter(record => record.timestamp.getFullYear() === selectedYear);
-    }
-    if (filterMonth) {
-        const selectedMonthIndex = parseInt(filterMonth) - 1;
-        filtered = filtered.filter(record => record.timestamp.getMonth() === selectedMonthIndex);
-    }
-
-    return filtered.reduce((acc, record) => {
-        if (record.status === 'ซื้อเข้า') {
-            acc.totalIn += record.quantity;
-        } else if (record.status === 'ขายออก') {
-            acc.totalOut += record.quantity;
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-120vh); opacity: 0; }
         }
-        return acc;
-    }, { totalIn: 0, totalOut: 0 });
-  }, [records, filterYear, filterMonth]);
-  
-  const currentMonthName = useMemo(() => {
-    if(filterMonth) return getThaiMonthName(filterMonth);
-    return 'เดือนปัจจุบัน';
-  }, [filterMonth]);
 
-  const { data: chartData, xAxisKey, summary: chartSummary } = useMemo(() => prepareChartData(
-    records,
-    {
-      year: chartYear,
-      month: chartSelectedMonth,
-      yearActive: isChartYearFilterActive,
-      monthActive: isChartMonthFilterActive,
-      statusFilter: chartStatusFilter
-    },
-    'general'
-  ), [records, chartYear, chartSelectedMonth, isChartYearFilterActive, isChartMonthFilterActive, chartStatusFilter]);
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #075985;
+        }
 
-  const productionChartData = useMemo(() => prepareChartData(
-    productionRecords,
-    {
-      year: productionChartYear,
-      month: productionChartMonth,
-      yearActive: isProductionChartYearFilterActive,
-      monthActive: isProductionChartMonthFilterActive,
-      statusFilter: ''
-    },
-    'production'
-  ), [productionRecords, productionChartYear, productionChartMonth, isProductionChartYearFilterActive, isProductionChartMonthFilterActive]);
+        /* Accordion transition */
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.active {
+            opacity: 1;
+        }
 
-  const chartBrushIndices = useMemo(() => {
-    if (!isChartMonthFilterActive || chartData.length <= 10) {
-      return { startIndex: undefined, endIndex: undefined };
-    }
-    const lastDataIndex = chartData.findLastIndex(d => (d['ซื้อเข้า'] || 0) + (d['ขายออก'] || 0) > 0);
+        /* Gallery Overlay */
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-700 bg-gray-50 antialiased relative overflow-x-hidden">
 
-    if (lastDataIndex === -1) {
-      return { startIndex: Math.max(0, chartData.length - 10), endIndex: chartData.length - 1 };
-    }
-
-    const endIndex = Math.min(chartData.length - 1, lastDataIndex + 4);
-    const startIndex = Math.max(0, endIndex - 9);
-
-    return { startIndex, endIndex };
-  }, [chartData, isChartMonthFilterActive]);
-
-  const productionBrushIndices = useMemo(() => {
-    if (!isProductionChartMonthFilterActive || productionChartData.length <= 10) {
-        return { startIndex: undefined, endIndex: undefined };
-    }
-    const lastDataIndex = productionChartData.findLastIndex(d => d['จำนวนกระสอบที่ผลิตได้'] > 0);
-
-    if (lastDataIndex === -1) {
-        return { startIndex: Math.max(0, productionChartData.length - 10), endIndex: productionChartData.length - 1 };
-    }
-    
-    const endIndex = Math.min(productionChartData.length - 1, lastDataIndex + 4);
-    const startIndex = Math.max(0, endIndex - 9);
-    
-    return { startIndex, endIndex };
-  }, [productionChartData, isProductionChartMonthFilterActive]);
-
-  if (currentPage === 'inventory') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-100 to-green-200 p-4 md:p-8 relative">
-        <button
-            onClick={() => openAlert('กรุณากรอกรหัสผ่าน', 'เพื่อเข้าสู่หน้ารายงานสถานะสินค้า', () => setCurrentPage('management'), true, 'ยืนยัน', 'ยกเลิก', true, '4455')}
-            className="absolute top-8 right-8 z-20 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
-        >
-            <FileText size={20} />
-            <span>รายงานสถานะสินค้า</span>
-        </button>
-
-        {isLoading && <LoadingOverlay message={loadingMessage} />}
-        {showAlertModal && <CustomAlertModal title={alertTitle} message={alertMessage} onClose={closeAlert} onConfirm={alertOnConfirm} showCancel={alertShowCancel} confirmText={alertConfirmText} cancelText={alertCancelText} showPasswordInput={alertShowPasswordInput} passwordValue={alertPasswordValue} onPasswordChange={setAlertPasswordValue} correctPassword={alertCorrectPassword} />}
-        {showModal && selectedRecord && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-xl sm:rounded-2xl w-full max-w-sm sm:max-w-2xl lg:max-w-4xl p-4 sm:p-6 lg:p-8 shadow-2xl transform scale-100 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">รูปภาพประกอบรายการ</h3>
-              {selectedRecord.images && selectedRecord.images.length > 0 ? (
-                <div className="mb-4 sm:mb-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                    {selectedRecord.images.map((image, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={image}
-                          alt={`ประกอบ ${index + 1}`}
-                          className="w-full h-40 sm:h-48 md:h-56 lg:h-80 object-contain rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity border border-gray-200 bg-gray-50"
-                          onClick={() => setCurrentImagePreview(image)}
-                          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/000000?text=Image+Not+Found"; }}
-                        />
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs sm:text-sm">
-                          รูปที่ {index + 1}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 sm:py-12">
-                  <Package className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-300" />
-                  <p className="text-gray-500 text-base sm:text-lg">ไม่มีรูปภาพสำหรับรายการนี้</p>
-                </div>
-              )}
-
-              {currentImagePreview && (
-                <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-2 sm:p-4">
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <button
-                      onClick={() => setCurrentImagePreview(null)}
-                      className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-2 sm:p-3 shadow-lg transition-all z-10"
-                      title="ปิดรูปภาพ"
-                    >
-                      <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
-                    </button>
-                    <img 
-                      src={currentImagePreview} 
-                      alt="Preview" 
-                      className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                      style={{ maxWidth: '95vw', maxHeight: '95vh' }}
-                    />
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white px-3 py-2 rounded-full text-sm sm:hidden">
-                      แตะเพื่อปิด
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-sm transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <i class="fa-solid fa-fish-fins text-brand-600 text-3xl animate-pulse"></i>
+                    <div class="flex flex-col">
+                        <span class="font-bold text-xl text-brand-900 leading-none tracking-tight">SWK</span>
+                        <span class="text-sm text-brand-500 font-medium tracking-widest">FISHSCALES</span>
                     </div>
-                  </div>
                 </div>
-              )}
 
-              <button
-                onClick={closeModal}
-                className="w-full bg-blue-500 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-base sm:text-lg"
-              >
-                ปิด
-              </button>
-            </div>
-          </div>
-        )}
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">
+                        หน้าแรก
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#products" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">
+                        ผลิตภัณฑ์
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#gallery" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">
+                        ผลงาน
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#standards" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">
+                        มาตรฐาน
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span>
+                    </a>
+                    <a href="#contact" class="px-5 py-2.5 bg-brand-600 text-white font-medium rounded-full hover:bg-brand-700 transition shadow-lg shadow-brand-500/30 transform hover:scale-105 active:scale-95">
+                        ติดต่อเรา
+                    </a>
+                </div>
 
-        <div className="max-w-7xl mx-auto space-y-8 md:max-w-full lg:max-w-7xl">
-          <div className="text-center pt-16">
-            <h1 className="text-5xl font-black text-gray-800 mb-2 md:text-6xl">ปริมาณสินค้า</h1>
-            <p className="text-lg text-gray-600 mb-8 md:text-xl">เกล็ดปลาตากแห้ง</p>
-          </div>
-
-          <div className="flex justify-center">
-            <div className="flex flex-wrap justify-center gap-4 max-w-7xl mx-auto md:max-w-full lg:max-w-7xl">
-              <div className="bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 relative flex flex-col justify-between min-w-[280px] flex-1 md:min-w-[300px]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-emerald-800 md:text-xl">จำนวนที่ทำได้วันนี้</h3>
-                  <div className="bg-emerald-500 p-2 rounded-full">
-                    <Package className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <div className="text-center relative">
-                  <p className="text-5xl font-bold text-emerald-900 mb-2 md:text-6xl">{getTodayTotalProduction().toLocaleString()}</p>
-                  <div className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium absolute bottom-0 right-0">
-                    กระสอบ
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 relative flex flex-col justify-between min-w-[280px] flex-1 md:min-w-[300px]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-violet-800 md:text-xl whitespace-nowrap">จำนวนที่ทำได้ ({currentMonthName})</h3>
-                  <div className="bg-violet-500 p-2 rounded-full">
-                    <Calendar className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <div className="text-center relative">
-                  <p className="text-5xl font-bold text-violet-900 mb-2 md:text-6xl">{getMonthlyTotalProduction.toLocaleString()}</p>
-                  <div className="bg-violet-500 text-white px-3 py-1 rounded-full text-sm font-medium absolute bottom-0 right-0">
-                    กระสอบ
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 relative flex flex-col justify-between min-w-[280px] flex-1 md:min-w-[300px]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-sky-800 md:text-xl">จำนวนของพร้อมส่ง</h3>
-                  <div className="bg-sky-500 p-2 rounded-full">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <div className="text-center relative">
-                  <p className="text-5xl font-bold text-sky-900 mb-2 md:text-6xl">{readyForShipping.toLocaleString()}</p>
-                  <div className="bg-sky-500 text-white px-3 py-1 rounded-full text-sm font-medium absolute bottom-0 right-0">
-                    กระสอบ
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-2xl">
-                <FlaskConical className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent md:text-4xl">
-                บันทึกการผลิตวันนี้
-              </h2>
-            </div>
-            <div className="space-y-6">
-              <div className="flex items-center justify-center gap-4 md:gap-6">
-                <label className="text-lg font-semibold text-slate-700 md:text-xl">จำนวนที่ทำได้วันนี้</label>
-                <input
-                  type="number"
-                  value={todayProduced}
-                  onChange={handleTodayProducedChange}
-                  className="w-32 px-4 py-3 text-2xl font-bold text-center border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-center md:w-40 md:text-3xl md:py-4"
-                  placeholder="0"
-                  min="0"
-                  style={{ appearance: 'textfield', MozAppearance: 'textfield' }}
-                />
-                <span className="text-lg font-semibold text-slate-700 md:text-xl">กระสอบ</span>
-              </div>
-            </div>
-          </div>
-
-          {showConfirmModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl transform scale-100 transition-transform duration-300 ease-out">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">ยืนยันการบันทึก</h3>
-                  <div className="bg-amber-50 rounded-lg p-4 mb-6">
-                    <p className="text-lg text-amber-800 mb-2">จำนวนที่ทำได้วันนี้</p>
-                    <p className="text-3xl font-bold text-amber-600 mb-2">
-                      {parseInt(todayProduced || 0).toLocaleString()} กระสอบ
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      ({(parseInt(todayProduced || 0) * 10).toLocaleString()} กิโลกรัม)
-                    </p>
-                    <p className="text-sm text-gray-600 mt-2">
-                      วันที่: {new Date().toLocaleDateString('en-GB')}
-                    </p>
-                  </div>
-                  <div className="flex gap-4">
-                    <button
-                      onClick={handleCancelSubmit}
-                      className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-                    >
-                      ยกเลิก
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-brand-600 focus:outline-none transition-transform active:scale-90">
+                        <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
-                    <button
-                      onClick={handleConfirmSubmit}
-                      className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium transition-colors"
-                    >
-                      ยืนยัน
-                    </button>
-                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-2xl">
-                <History className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent md:text-4xl">
-                รายการผลิตย้อนหลัง
-              </h2>
-            </div>
-
-            <div className="mb-6 flex flex-wrap items-center gap-4 md:gap-6">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-slate-700 whitespace-nowrap md:text-base">ปี:</label>
-                <select
-                  value={productionFilterYear}
-                  onChange={(e) => setProductionFilterYear(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white min-w-[120px] md:min-w-[140px] md:text-base md:py-2.5"
-                >
-                  <option value="">ทั้งหมด</option>
-                  {availableYears.map(year => (<option key={year} value={year}>{year}</option>))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-slate-700 whitespace-nowrap md:text-base">เดือน:</label>
-                <select
-                  value={productionFilterMonth}
-                  onChange={(e) => setProductionFilterMonth(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white min-w-[120px] md:min-w-[140px] md:text-base md:py-2.5"
-                >
-                  <option value="">ทั้งหมด</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(monthNum => {
-                    const monthName = new Date(2000, monthNum - 1, 1).toLocaleDateString('th-TH', { month: 'long' });
-                    return <option key={monthNum} value={monthNum.toString()}>{monthName}</option>;
-                  })}
-                </select>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto max-h-80 relative">
-              <table className="min-w-full bg-white">
-                <thead className="sticky top-0 bg-white z-10 shadow-sm">
-                  <tr>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">วันที่/เวลา</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">จำนวนกระสอบที่ผลิตได้</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">จำนวน (KG)</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProductionRecords.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="text-center py-8 text-gray-500">
-                        <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                        <p>ไม่พบรายการผลิตที่ตรงกับตัวกรอง</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredProductionRecords.map((record) => (
-                      <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 text-center text-sm text-gray-800 md:text-base">
-                          {formatDateTimeForDisplay(record.timestamp)}
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm text-gray-800 md:text-base">
-                          {record.bags.toLocaleString()} กระสอบ
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm text-gray-800 md:text-base">
-                          {record.kilos.toLocaleString()} กิโลกรัม
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm">
-                          <button
-                            onClick={() => handleDeleteProductionRecord(record.id, record.bags)}
-                            className="bg-red-100 text-red-700 p-2 rounded-full hover:bg-red-200 transition-colors"
-                            title="ลบรายการ"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-2xl">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent md:text-4xl">
-                จำนวนที่ทำได้ในแต่ละวัน
-              </h2>
-            </div>
-            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="toggleProductionChartYearFilter"
-                  checked={isProductionChartYearFilterActive}
-                  onChange={(e) => {
-                    setIsProductionChartYearFilterActive(e.target.checked);
-                    if (!e.target.checked) {
-                      setIsProductionChartMonthFilterActive(false);
-                      setProductionChartMonth('');
-                    }
-                  }}
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                />
-                <label htmlFor="toggleProductionChartYearFilter" className="font-medium text-gray-700 md:text-base">ปี:</label>
-                <select
-                  id="productionChartYear"
-                  value={productionChartYear}
-                  onChange={(e) => setProductionChartYear(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 md:px-4 md:py-2.5 md:text-base"
-                  disabled={!isProductionChartYearFilterActive}
-                >
-                  {availableYears.map(year => (<option key={year} value={year}>{year}</option>))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="toggleProductionChartMonthFilter"
-                  checked={isProductionChartMonthFilterActive}
-                  onChange={(e) => {
-                    setIsProductionChartMonthFilterActive(e.target.checked);
-                    if (!e.target.checked) setProductionChartMonth('');
-                  }}
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                  disabled={!isProductionChartYearFilterActive}
-                />
-                <label htmlFor="toggleProductionChartMonthFilter" className="font-medium text-gray-700 md:text-base">เดือน:</label>
-                <select
-                  id="productionChartMonth"
-                  value={productionChartMonth}
-                  onChange={(e) => setProductionChartMonth(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 md:px-4 md:py-2.5 md:text-base"
-                  disabled={!isProductionChartMonthFilterActive || !isProductionChartYearFilterActive}
-                >
-                  <option value="">ทั้งหมด</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(monthNum => {
-                    const monthName = new Date(2000, monthNum - 1, 1).toLocaleDateString('th-TH', { month: 'long' });
-                    return <option key={monthNum} value={monthNum.toString()}>{monthName}</option>;
-                  })}
-                </select>
-              </div>
-            </div>
-
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={productionChartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey={
-                  (isProductionChartYearFilterActive && isProductionChartMonthFilterActive) ? "day" :
-                  (isProductionChartYearFilterActive && !isProductionChartMonthFilterActive) ? "month" :
-                  (!isProductionChartYearFilterActive && isProductionChartMonthFilterActive) ? "period" :
-                  "year"
-                } />
-                <YAxis label={{ value: 'จำนวนกระสอบ', angle: -90, position: 'insideLeft' }} />
-                <Tooltip content={<CustomTooltip 
-                                    xAxisKey={xAxisKey} 
-                                    year={isProductionChartYearFilterActive ? parseInt(productionChartYear) : null} 
-                                    month={isProductionChartMonthFilterActive ? parseInt(productionChartMonth) - 1 : null} 
-                                  />} />
-                <Legend />
-                <Bar dataKey="จำนวนกระสอบที่ผลิตได้" fill="#8884d8" name="กระสอบ" />
-                 {productionChartData.length > 10 && isProductionChartMonthFilterActive && (
-                  <Brush 
-                    dataKey="day" 
-                    height={30} 
-                    stroke="#8884d8" 
-                    startIndex={productionBrushIndices.startIndex}
-                    endIndex={productionBrushIndices.endIndex}
-                  />
-                )}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-           <div className="mt-8 text-right">
-                <button
-                    onClick={() => handleClearPageData('Production')}
-                    className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 ml-auto"
-                >
-                    <AlertTriangle className="w-5 h-5" />
-                    ล้างข้อมูลหน้านี้
-                </button>
             </div>
         </div>
-      </div>
-    );
-  }
+        
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 pt-2 pb-6 space-y-2 shadow-lg">
+                <a href="#home" class="block px-3 py-2 text-brand-900 font-medium hover:bg-brand-50 rounded-md">หน้าแรก</a>
+                <a href="#products" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md">ผลิตภัณฑ์</a>
+                <a href="#gallery" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md">ผลงานของเรา</a>
+                <a href="#standards" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md">มาตรฐาน</a>
+                <a href="#contact" class="block px-3 py-2 text-brand-600 font-bold">ติดต่อเรา</a>
+            </div>
+        </div>
+    </nav>
 
-  if (currentPage === 'management') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-4 md:p-8">
-        {isLoading && <LoadingOverlay message={loadingMessage} />}
-        {showAlertModal && <CustomAlertModal title={alertTitle} message={alertMessage} onClose={closeAlert} onConfirm={alertOnConfirm} showCancel={alertShowCancel} confirmText={alertConfirmText} cancelText={alertCancelText} showPasswordInput={alertShowPasswordInput} passwordValue={alertPasswordValue} onPasswordChange={setAlertPasswordValue} correctPassword={alertCorrectPassword} />}
-        {showModal && selectedRecord && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-8 shadow-2xl transform scale-100 transition-transform duration-300 ease-out">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">รูปภาพประกอบรายการ</h3>
-        {showModal && selectedRecord && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-4xl w-full p-8 shadow-2xl transform scale-100 transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">รูปภาพประกอบรายการ</h3>
-              {selectedRecord.images && selectedRecord.images.length > 0 ? (
-                <div className="mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center">
-                    {selectedRecord.images.map((image, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={image}
-                          alt={`ประกอบ ${index + 1}`}
-                          className="w-full h-64 md:h-80 object-contain rounded-lg shadow-md cursor-pointer hover:opacity-90 transition-opacity border border-gray-200"
-                          onClick={() => setCurrentImagePreview(image)}
-                          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/000000?text=Image+Not+Found"; }}
-                        />
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-sm">
-                          รูปที่ {index + 1}
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-[100dvh] flex items-center hero-bg overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full pt-20 pb-20">
+            <div class="md:w-2/3 fade-in-up">
+                <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight mb-6 drop-shadow-lg">
+                    ยกระดับคุณค่า<span class="whitespace-nowrap">ทรัพยากรทางทะเล</span> <br>
+                    <span class="text-sky-300">สู่มาตรฐานอุตสาหกรรม</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl font-light drop-shadow-md">
+                    SWK FishScales ผู้นำด้านการแปรรูปและส่งออกเกล็ดปลาคุณภาพสูง สำหรับอุตสาหกรรมคอลลาเจน อาหารเสริม และเครื่องสำอาง มุ่งมั่นสร้างความยั่งยืนด้วยนวัตกรรม
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#products" class="px-8 py-4 bg-white text-brand-900 font-bold rounded-full hover:bg-gray-100 transition shadow-lg text-center transform hover:-translate-y-1">
+                        ผลิตภัณฑ์ของเรา
+                    </a>
+                    <a href="#contact" class="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full hover:bg-white/10 transition text-center transform hover:-translate-y-1">
+                        ติดต่อสอบถาม
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Animated Wave Bottom -->
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none rotate-180 pointer-events-none">
+            <svg class="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[120px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="fill-gray-50"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Standards & Trust -->
+    <section id="standards" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <!-- Carousel Image Section (Updated) -->
+                <div class="md:w-1/2 fade-in-up relative group">
+                    <!-- Decorative background -->
+                    <div class="absolute inset-0 bg-brand-500 rounded-2xl transform rotate-3 transition-transform group-hover:rotate-6 opacity-20"></div>
+                    
+                    <!-- Carousel Container -->
+                    <div class="relative rounded-2xl shadow-2xl overflow-hidden h-[400px] w-full bg-gray-100 group-hover:scale-[1.01] transition-transform duration-500">
+                        <!-- Images -->
+                        <div id="standards-carousel" class="w-full h-full relative">
+                            <!-- Image 1 -->
+                            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-100" data-index="0" alt="Lab Testing">
+                            
+                            <!-- Image 2 -->
+                            <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=2080&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" data-index="1" alt="Microscope Analysis">
+                            
+                            <!-- Image 3 -->
+                            <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2070&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" data-index="2" alt="Quality Control">
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-gray-500 text-lg">ไม่มีรูปภาพสำหรับรายการนี้</p>
-                </div>
-              )}
 
-              {currentImagePreview && (
-                <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
-                  <div className="relative max-w-full max-h-full overflow-auto">
-                    <button
-                      onClick={() => setCurrentImagePreview(null)}
-                      className="absolute top-4 right-4 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-3 shadow-lg transition-all z-10"
-                      title="ปิดรูปภาพ"
-                    >
-                      <X className="w-6 h-6 text-gray-700" />
-                    </button>
-                    <img 
-                      src={currentImagePreview} 
-                      alt="Preview" 
-                      className="max-w-full max-h-[95vh] object-contain rounded-lg shadow-2xl" 
-                    />
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={closeModal}
-                className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-lg"
-              >
-                ปิด
-              </button>
-            </div>
-          </div>
-        )}
-
-              <button
-                onClick={closeModal}
-                className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
-              >
-                ปิด
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="max-w-7xl mx-auto space-y-8 md:max-w-full lg:max-w-7xl">
-          <div className="text-center">
-            <button
-              onClick={() => setCurrentPage('inventory')}
-              className="mb-4 bg-white/80 hover:bg-white text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto"
-            >
-              ← กลับไปหน้าปริมาณสินค้า
-            </button>
-            <h1 className="text-5xl font-black text-gray-800 mb-2 md:text-6xl">รายงานสถานะสินค้า</h1>
-            <p className="text-lg text-gray-600 mb-8 md:text-xl">เกล็ดปลาตากแห้ง</p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4 max-w-7xl mx-auto md:max-w-full lg:max-w-7xl">
-            <div className="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 relative flex flex-col justify-between min-w-[280px] flex-1 md:min-w-[300px]">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-green-800 md:text-xl">ซื้อเข้า ({currentMonthName})</h3>
-                <div className="bg-green-500 p-2 rounded-full">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-center relative">
-                <p className="text-5xl font-bold text-green-900 mb-2 md:text-6xl">{monthlyStats.totalIn.toLocaleString()}</p>
-                <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium absolute bottom-0 right-0">
-                  KG
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-red-100 to-red-200 border border-red-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 relative flex flex-col justify-between min-w-[280px] flex-1 md:min-w-[300px]">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-red-800 md:text-xl">ขายออก ({currentMonthName})</h3>
-                <div className="bg-red-500 p-2 rounded-full">
-                  <TrendingDown className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-center relative">
-                <p className="text-5xl font-bold text-red-900 mb-2 md:text-6xl">{monthlyStats.totalOut.toLocaleString()}</p>
-                <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium absolute bottom-0 right-0">
-                  KG
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 relative flex flex-col justify-between min-w-[280px] flex-1 md:min-w-[300px]">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-violet-800 md:text-xl">ของพร้อมส่ง</h3>
-                <div className="bg-violet-500 p-2 rounded-full">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <div className="text-center relative">
-                <p className="text-5xl font-bold text-violet-900 mb-2 md:text-6xl">{readyForShipping.toLocaleString()}</p>
-                <div className="bg-violet-500 text-white px-3 py-1 rounded-full text-sm font-medium absolute bottom-0 right-0">
-                  กระสอบ
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-2xl">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent md:text-4xl">
-                บันทึกรายการสินค้า
-              </h2>
-            </div>
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-lg font-semibold text-slate-700 md:text-xl">สถานะ</label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg font-medium md:text-xl md:py-5 ${
-                      formData.status === 'ซื้อเข้า' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' :
-                      formData.status === 'ขายออก' ? 'bg-sky-50 border-sky-300 text-sky-700' :
-                      'bg-gray-50 border-gray-300 text-gray-500'
-                    }`}
-                  >
-                    <option value="" className="text-gray-400">กรุณาเลือกสถานะ</option>
-                    <option value="ซื้อเข้า" className="text-emerald-700">📦 ซื้อเข้า</option>
-                    <option value="ขายออก" className="text-sky-700">🚛 ขายออก</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-lg font-semibold text-slate-700 md:text-xl">ชื่อลูกค้า/ผู้ขาย</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg md:text-xl md:py-5 ${
-                      formData.status === 'ขายออก' ? 'bg-gray-100 cursor-not-allowed border-gray-300' : 'bg-white border-gray-300 hover:border-gray-400'
-                    }`}
-                    placeholder="กรอกชื่อ..."
-                    readOnly={formData.status === 'ขายออก'}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-lg font-semibold text-slate-700 md:text-xl">
-                  จำนวน ({formData.status === 'ขายออก' ? 'กระสอบ' : 'กิโลกรัม'})
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={formData.quantity}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-4 pr-16 border-2 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg bg-white border-gray-300 hover:border-gray-400 md:text-xl md:py-5"
-                    placeholder={formData.status === 'ขายออก' ? 'กรอกจำนวนเป็นกระสอบ' : 'กรอกจำนวนเป็นกิโลกรัม'}
-                    min="0"
-                    step="0.01"
-                  />
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium md:text-lg">
-                    {formData.status === 'ขายออก' ? 'กระสอบ' : 'KG'}
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-lg font-semibold text-slate-700 md:text-xl">แนบรูปภาพ (1 รูป)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full px-4 py-4 border-2 border-dashed border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg bg-gray-50 hover:bg-gray-100 md:text-xl md:py-5"
-                />
-                {formData.images.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={image}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-xl border-2 border-gray-200 group-hover:border-blue-400 transition-colors md:h-32"
-                          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/000000?text=Image+Not+Found"; }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm transition-colors shadow-lg md:w-8 md:h-8 md:text-base"
-                        >
-                          ×
+                        <!-- Navigation Controls -->
+                        <button onclick="changeStandardSlide(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-brand-600/80 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition z-20 group/btn">
+                            <i class="fa-solid fa-chevron-left group-hover/btn:-translate-x-0.5 transition-transform"></i>
                         </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className={`w-full py-4 px-8 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] md:text-xl md:py-5 ${
-                    isLoading 
-                      ? 'bg-gray-400 text-white cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white'
-                  }`}
-                >
-                  {isLoading ? '🔄 กำลังบันทึก...' : '💾 บันทึกรายการ'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-2xl">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent md:text-4xl">
-                รายการสินค้าทั้งหมด
-              </h2>
-            </div>
-            <div className="mb-6 flex flex-wrap items-center gap-4 md:gap-6">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-slate-700 whitespace-nowrap md:text-base">ปี:</label>
-                <select
-                  value={filterYear}
-                  onChange={(e) => setFilterYear(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white min-w-[120px] md:min-w-[140px] md:text-base md:py-2.5"
-                >
-                  <option value="">ทั้งหมด</option>
-                  {availableYears.map(year => (<option key={year} value={year}>{year}</option>))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-slate-700 whitespace-nowrap md:text-base">เดือน:</label>
-                <select
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white min-w-[120px] md:min-w-[140px] md:text-base md:py-2.5"
-                >
-                  <option value="">ทั้งหมด</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(monthNum => {
-                    const monthName = new Date(2000, monthNum - 1, 1).toLocaleDateString('th-TH', { month: 'long' });
-                    return <option key={monthNum} value={monthNum.toString()}>{monthName}</option>;
-                  })}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-slate-700 whitespace-nowrap md:text-base">สถานะ:</label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white min-w-[120px] md:min-w-[140px] md:text-base md:py-2.5"
-                >
-                  <option value="">ทั้งหมด</option>
-                  <option value="ซื้อเข้า">ซื้อเข้า</option>
-                  <option value="ขายออก">ขายออก</option>
-                </select>
-              </div>
-            </div>
-            <div className="overflow-y-auto max-h-96 relative">
-              <table className="min-w-full bg-white">
-                <thead className="sticky top-0 bg-white z-10 shadow-sm">
-                  <tr>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">วันที่/เวลา</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">ชื่อ / สถานะ</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">จำนวน (KG)</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base">รายละเอียด</th>
-                    <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 md:text-base"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRecords.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="text-center py-8 text-gray-500">
-                        <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                        <p>ไม่พบรายการสินค้าที่ตรงกับตัวกรอง</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRecords.map((record) => (
-                      <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 text-center text-sm text-gray-800 md:text-base">
-                          {formatDateTimeForDisplay(record.timestamp)}
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm text-gray-800 md:text-base">
-                          {record.name}{' '}
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold inline-block ${
-                            record.status === 'ซื้อเข้า' ? 'bg-green-600 text-white' :
-                            'bg-blue-400 text-white'
-                          }`}>
-                            {record.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm text-gray-800 md:text-base">
-                          {record.quantity.toLocaleString()} KG
-                          {record.status === 'ขายออก' && (
-                            <>
-                              <br />
-                              <span className="text-xs text-gray-600">
-                                (จำนวน {(record.quantity / 10).toLocaleString()} กระสอบ)
-                              </span>
-                            </>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm">
-                          <button
-                            onClick={() => handleDetailsClick(record)}
-                            className="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm hover:bg-blue-200 md:px-4 md:py-2 md:text-base"
-                          >
-                            ดูรายละเอียด
-                          </button>
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm">
-                          <button
-                            onClick={() => handleDeleteRecord(record.id, record.status, record.quantity)}
-                            className="bg-red-100 text-red-700 p-2 rounded-full hover:bg-red-200 transition-colors"
-                            title="ลบรายการ"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-8 md:p-10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 md:text-3xl">
-              ภาพรวมปริมาณสินค้า (KG)
-            </h2>
-            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="toggleChartYearFilter"
-                  checked={isChartYearFilterActive}
-                  onChange={(e) => {
-                    setIsChartYearFilterActive(e.target.checked);
-                    if (!e.target.checked) {
-                      setIsChartMonthFilterActive(false);
-                      setChartSelectedMonth('');
-                    }
-                  }}
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                />
-                <label htmlFor="toggleChartYearFilter" className="font-medium text-gray-700 md:text-base">ปี:</label>
-                <select
-                  value={chartYear}
-                  onChange={(e) => setChartYear(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 md:px-4 md:py-2.5 md:text-base"
-                  disabled={!isChartYearFilterActive}
-                >
-                  {availableYears.map(year => (<option key={year} value={year}>{year}</option>))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="toggleChartMonthFilter"
-                  checked={isChartMonthFilterActive}
-                  onChange={(e) => {
-                    setIsChartMonthFilterActive(e.target.checked);
-                    if (!e.target.checked) setChartSelectedMonth('');
-                  }}
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                  disabled={!isChartYearFilterActive}
-                />
-                <label htmlFor="toggleChartMonthFilter" className="font-medium text-gray-700 md:text-base">เดือน:</label>
-                <select
-                  value={chartSelectedMonth}
-                  onChange={(e) => setChartSelectedMonth(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 md:px-4 md:py-2.5 md:text-base"
-                  disabled={!isChartMonthFilterActive || !isChartYearFilterActive}
-                >
-                  <option value="">ทั้งหมด</option>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(monthNum => {
-                    const monthName = new Date(2000, monthNum - 1, 1).toLocaleDateString('th-TH', { month: 'long' });
-                    return <option key={monthNum} value={monthNum.toString()}>{monthName}</option>;
-                  })}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label htmlFor="chartStatusFilter" className="font-medium text-gray-700 md:text-base">สถานะ:</label>
-                <select
-                  id="chartStatusFilter"
-                  value={chartStatusFilter}
-                  onChange={(e) => setChartStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 md:px-4 md:py-2.5 md:text-base"
-                >
-                  <option value="">ทั้งหมด</option>
-                  <option value="ซื้อเข้า">ซื้อเข้า</option>
-                  <option value="ขายออก">ขายออก</option>
-                </select>
-              </div>
-            </div>
-
-            {isChartYearFilterActive && isChartMonthFilterActive && chartSelectedMonth && (
-              <div className="mt-4 mb-4 flex flex-wrap justify-center items-center gap-4 p-4 bg-blue-50 rounded-lg shadow-inner md:gap-6 md:text-base">
-                <span className="text-gray-600 text-base font-semibold">
-                  (เดือน{getThaiMonthName(chartSelectedMonth)} ปี {chartYear})
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-green-500"></span>
-                  <span className="text-blue-700">นำเข้า: <span className="font-semibold text-green-700">{chartSummary.totalBuyIn.toLocaleString()} KG</span></span>
+                        <button onclick="changeStandardSlide(1)" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-brand-600/80 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition z-20 group/btn">
+                            <i class="fa-solid fa-chevron-right group-hover/btn:translate-x-0.5 transition-transform"></i>
+                        </button>
+                        
+                        <!-- Dots Indicators -->
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                            <button class="w-2.5 h-2.5 rounded-full bg-white transition-all duration-300 standard-dot scale-110 shadow-sm" onclick="setStandardSlide(0)"></button>
+                            <button class="w-2.5 h-2.5 rounded-full bg-white/40 hover:bg-white transition-all duration-300 standard-dot shadow-sm" onclick="setStandardSlide(1)"></button>
+                            <button class="w-2.5 h-2.5 rounded-full bg-white/40 hover:bg-white transition-all duration-300 standard-dot shadow-sm" onclick="setStandardSlide(2)"></button>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-blue-500"></span>
-                  <span className="text-blue-700">ส่งออก: <span className="font-semibold text-blue-700">{chartSummary.totalSellOut.toLocaleString()} KG</span></span>
-                </div>
-              </div>
-            )}
 
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey={xAxisKey} />
-                <YAxis />
-                <Tooltip content={<CustomTooltip 
-                                    xAxisKey={xAxisKey} 
-                                    year={isChartYearFilterActive ? parseInt(chartYear) : null} 
-                                    month={isChartMonthFilterActive ? parseInt(chartSelectedMonth) - 1 : null} 
-                                  />} />
-                <Legend />
-                {chartStatusFilter !== 'ขายออก' && <Bar dataKey="ซื้อเข้า" fill="#4CAF50" name="ซื้อเข้า (KG)" />}
-                {chartStatusFilter !== 'ซื้อเข้า' && <Bar dataKey="ขายออก" fill="#2196F3" name="ขายออก (KG)" />}
-                {chartData.length > 10 && isChartMonthFilterActive && (
-                  <Brush 
-                    dataKey="day" 
-                    height={30} 
-                    stroke="#8884d8" 
-                    startIndex={chartBrushIndices.startIndex}
-                    endIndex={chartBrushIndices.endIndex}
-                  />
-                )}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-           <div className="mt-8 text-right">
-                <button
-                    onClick={() => handleClearPageData('Records')}
-                    className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 ml-auto"
-                >
-                    <AlertTriangle className="w-5 h-5" />
-                    ล้างข้อมูลหน้านี้
-                </button>
+                <div class="md:w-1/2 fade-in-up">
+                    <h2 class="text-3xl font-bold text-brand-900 mb-6 border-l-4 border-brand-500 pl-4">มาตรฐานคุณภาพที่คุณวางใจได้</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        SWK FishScales ให้ความสำคัญสูงสุดกับคุณภาพและความปลอดภัย กระบวนการผลิตของเราผ่านการตรวจสอบอย่างเข้มงวดในทุกขั้นตอน ตั้งแต่การรับวัตถุดิบจนถึงการส่งมอบสินค้า เพื่อให้มั่นใจว่าเกล็ดปลาของเราบริสุทธิ์และพร้อมสำหรับการนำไปแปรรูปต่อ
+                    </p>
+                </div>
             </div>
         </div>
-      </div>
-    );
-  }
+    </section>
 
-  return null;
-};
+    <!-- Parallax Vision Section (New Gimmick) -->
+    <section class="py-24 parallax-bg relative flex items-center justify-center text-center">
+        <div class="max-w-4xl mx-auto px-4 z-10 fade-in-up">
+            <i class="fa-solid fa-quote-left text-4xl text-accent-gold mb-6 opacity-80"></i>
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                "เราเปลี่ยนสิ่งเหลือใช้จากธรรมชาติ <br>ให้กลายเป็นนวัตกรรมที่ล้ำค่า"
+            </h2>
+        </div>
+    </section>
 
-export default App;
+    <!-- Products (Added Bubbles) -->
+    <section id="products" class="py-20 bg-brand-900 text-white relative overflow-hidden">
+        <!-- Bubbles Container -->
+        <div id="bubbles-container" class="absolute inset-0 w-full h-full overflow-hidden z-0">
+            <!-- JS will inject bubbles here -->
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="text-brand-500 font-bold tracking-wide uppercase text-sm mb-2">Our Products</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-white">ผลิตภัณฑ์เกล็ดปลาคุณภาพสูง</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Product 1 -->
+                <div class="bg-brand-800 rounded-2xl overflow-hidden group hover:shadow-2xl hover:shadow-brand-500/30 transition-all duration-300 transform hover:-translate-y-2 fade-in-up border border-brand-700/50">
+                    <div class="h-56 overflow-hidden relative">
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1522778526097-ce0a22ce718d?q=80&w=2070&auto=format&fit=crop" alt="Dried Fish Scales" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
+                    </div>
+                    <div class="p-8 relative z-20 bg-brand-800">
+                        <h4 class="text-xl font-bold mb-3 group-hover:text-brand-400 transition">เกล็ดปลาแห้ง (Dried Scales)</h4>
+                        <p class="text-gray-300 text-sm mb-4">ผ่านกระบวนการทำความสะอาดและตากแห้งด้วยระบบ Solar Dome ควบคุมความชื้นต่ำกว่า 10%</p>
+                        <ul class="text-xs text-brand-200 space-y-2">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i>ปลานิล (Tilapia)</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i>ไม่มีสารเคมีตกค้าง</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="bg-brand-800 rounded-2xl overflow-hidden group hover:shadow-2xl hover:shadow-brand-500/30 transition-all duration-300 transform hover:-translate-y-2 fade-in-up border border-brand-700/50" style="transition-delay: 100ms;">
+                    <div class="h-56 overflow-hidden relative">
+                         <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=1887&auto=format&fit=crop" alt="Decalcified Scales" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
+                    </div>
+                    <div class="p-8 relative z-20 bg-brand-800">
+                        <h4 class="text-xl font-bold mb-3 group-hover:text-brand-400 transition">เกล็ดปลาขจัดแคลเซียม (Ossein)</h4>
+                        <p class="text-gray-300 text-sm mb-4">วัตถุดิบตั้งต้นสำหรับการผลิตคอลลาเจนและเจลาติน ผ่านการดึงแร่ธาตุออกด้วยเทคโนโลยีขั้นสูง</p>
+                        <ul class="text-xs text-brand-200 space-y-2">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i>ความบริสุทธิ์สูง</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i>ละลายน้ำได้ง่าย</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="bg-brand-800 rounded-2xl overflow-hidden group hover:shadow-2xl hover:shadow-brand-500/30 transition-all duration-300 transform hover:-translate-y-2 fade-in-up border border-brand-700/50" style="transition-delay: 200ms;">
+                    <div class="h-56 overflow-hidden relative">
+                         <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1599423300746-b62507ac9741?q=80&w=1964&auto=format&fit=crop" alt="Collagen Peptide" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700">
+                    </div>
+                    <div class="p-8 relative z-20 bg-brand-800">
+                        <h4 class="text-xl font-bold mb-3 group-hover:text-brand-400 transition">คอลลาเจน เปปไทด์ (OEM)</h4>
+                        <p class="text-gray-300 text-sm mb-4">บริการผลิตคอลลาเจนผงเกรดพรีเมียมจากเกล็ดปลา โมเลกุลขนาดเล็ก ดูดซึมไว</p>
+                        <ul class="text-xs text-brand-200 space-y-2">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i>สำหรับอุตสาหกรรมอาหารเสริม</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i>ไร้กลิ่นคาว</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery / Our Works (NEW FEATURE) -->
+    <section id="gallery" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 fade-in-up">
+                <h2 class="text-brand-600 font-bold tracking-wide uppercase text-sm mb-2">Portfolio</h2>
+                <h3 class="text-3xl font-bold text-gray-900">ภาพความสำเร็จและผลงานของเรา</h3>
+                <p class="mt-2 text-gray-600 max-w-2xl mx-auto">ภาพบรรยากาศจากโรงงานผลิตที่ได้รับมาตรฐาน กระบวนการตรวจสอบคุณภาพ และการส่งออกไปยังคู่ค้าทั่วโลก</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 fade-in-up">
+                <!-- Gallery Item 1 -->
+                <div class="gallery-item relative h-64 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 group" onclick="openLightbox('https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?q=80&w=2070&auto=format&fit=crop')">
+                    <img src="https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-brand-900/70 opacity-0 transition-opacity duration-300 flex items-center justify-center flex-col text-white">
+                        <i class="fa-solid fa-magnifying-glass-plus text-3xl mb-2"></i>
+                        <span class="font-medium">กระบวนการผลิต</span>
+                    </div>
+                </div>
+
+                <!-- Gallery Item 2 -->
+                <div class="gallery-item relative h-64 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 group" onclick="openLightbox('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2070&auto=format&fit=crop')">
+                    <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-brand-900/70 opacity-0 transition-opacity duration-300 flex items-center justify-center flex-col text-white">
+                        <i class="fa-solid fa-magnifying-glass-plus text-3xl mb-2"></i>
+                        <span class="font-medium">ห้องปฏิบัติการตรวจสอบ</span>
+                    </div>
+                </div>
+
+                <!-- Gallery Item 3 -->
+                <div class="gallery-item relative h-64 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 group" onclick="openLightbox('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop')">
+                    <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-brand-900/70 opacity-0 transition-opacity duration-300 flex items-center justify-center flex-col text-white">
+                        <i class="fa-solid fa-magnifying-glass-plus text-3xl mb-2"></i>
+                        <span class="font-medium">คลังสินค้า</span>
+                    </div>
+                </div>
+
+                <!-- Gallery Item 4 -->
+                <div class="gallery-item relative h-64 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 group" onclick="openLightbox('https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=2070&auto=format&fit=crop')">
+                    <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-brand-900/70 opacity-0 transition-opacity duration-300 flex items-center justify-center flex-col text-white">
+                        <i class="fa-solid fa-magnifying-glass-plus text-3xl mb-2"></i>
+                        <span class="font-medium">การส่งออกสินค้า</span>
+                    </div>
+                </div>
+
+                <!-- Gallery Item 5 -->
+                <div class="gallery-item relative h-64 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 group" onclick="openLightbox('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2032&auto=format&fit=crop')">
+                    <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2032&auto=format&fit=crop" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-brand-900/70 opacity-0 transition-opacity duration-300 flex items-center justify-center flex-col text-white">
+                        <i class="fa-solid fa-magnifying-glass-plus text-3xl mb-2"></i>
+                        <span class="font-medium">การประชุมคู่ค้า</span>
+                    </div>
+                </div>
+
+                 <!-- Gallery Item 6 -->
+                 <div class="gallery-item relative h-64 rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 group" onclick="openLightbox('https://images.unsplash.com/photo-1628194411442-76342898950d?q=80&w=1974&auto=format&fit=crop')">
+                    <img src="https://images.unsplash.com/photo-1628194411442-76342898950d?q=80&w=1974&auto=format&fit=crop" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                    <div class="gallery-overlay absolute inset-0 bg-brand-900/70 opacity-0 transition-opacity duration-300 flex items-center justify-center flex-col text-white">
+                        <i class="fa-solid fa-magnifying-glass-plus text-3xl mb-2"></i>
+                        <span class="font-medium">วัตถุดิบคุณภาพสูง</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Accordion (New Gimmick) -->
+    <section id="faq" class="py-20 bg-white">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 fade-in-up">
+                <h3 class="text-3xl font-bold text-gray-900">คำถามที่พบบ่อย (FAQ)</h3>
+                <p class="mt-2 text-gray-600">ข้อมูลเบื้องต้นสำหรับผู้ที่สนใจร่วมธุรกิจ</p>
+            </div>
+
+            <div class="space-y-4 fade-in-up">
+                <!-- FAQ Item 1 -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-brand-300 transition">
+                    <button class="w-full px-6 py-4 text-left bg-gray-50 hover:bg-white flex justify-between items-center transition focus:outline-none" onclick="toggleAccordion(this)">
+                        <span class="font-medium text-gray-800">ปริมาณการสั่งซื้อขั้นต่ำ (MOQ) เท่าไหร่?</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div class="accordion-content bg-white px-6">
+                        <div class="py-4 text-gray-600 border-t border-gray-100">
+                            สำหรับการส่งออก ปริมาณการสั่งซื้อขั้นต่ำคือ 1 ตู้คอนเทนเนอร์ (20 ฟุต) หรือประมาณ 15-20 ตัน ขึ้นอยู่กับประเภทของผลิตภัณฑ์ หากต้องการตัวอย่างสินค้า สามารถติดต่อฝ่ายขายได้โดยตรง
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-brand-300 transition">
+                    <button class="w-full px-6 py-4 text-left bg-gray-50 hover:bg-white flex justify-between items-center transition focus:outline-none" onclick="toggleAccordion(this)">
+                        <span class="font-medium text-gray-800">ระยะเวลาในการจัดส่ง (Lead Time) นานแค่ไหน?</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div class="accordion-content bg-white px-6">
+                        <div class="py-4 text-gray-600 border-t border-gray-100">
+                            โดยปกติใช้เวลาเตรียมสินค้าและดำเนินการด้านเอกสารการส่งออกประมาณ 15-30 วัน หลังจากได้รับการยืนยันคำสั่งซื้อและวางเงินมัดจำ
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-brand-300 transition">
+                    <button class="w-full px-6 py-4 text-left bg-gray-50 hover:bg-white flex justify-between items-center transition focus:outline-none" onclick="toggleAccordion(this)">
+                        <span class="font-medium text-gray-800">มีใบรับรอง Health Certificate ให้หรือไม่?</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                    </button>
+                    <div class="accordion-content bg-white px-6">
+                        <div class="py-4 text-gray-600 border-t border-gray-100">
+                            ใช่ เรามีเอกสารรับรองครบถ้วน ทั้ง Health Certificate, Certificate of Origin, และผลการวิเคราะห์คุณภาพ (COA) เพื่อใช้ในการผ่านพิธีการศุลกากรปลายทาง
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action / Contact -->
+    <section id="contact" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row fade-in-up">
+                <!-- Info Side -->
+                <div class="md:w-5/12 bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-3xl font-bold mb-6">ร่วมธุรกิจกับเรา</h3>
+                        <p class="text-brand-100 mb-8">
+                            ต้องการข้อมูลเพิ่มเติมเกี่ยวกับผลิตภัณฑ์ สามารถติดต่อเราได้ทันที
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-white/20 p-3 rounded-lg"><i class="fa-solid fa-location-dot"></i></div>
+                                <div>
+                                    <h5 class="font-bold">ที่อยู่สำนักงาน</h5>
+                                    <p class="text-sm text-brand-100">9/1 ตำบลบางตะบูนออก <br>อำเภอบ้านแหลม จังหวัดเพชรบุรี</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="bg-white/20 p-3 rounded-lg"><i class="fa-solid fa-phone"></i></div>
+                                <div>
+                                    <h5 class="font-bold">โทรศัพท์</h5>
+                                    <p class="text-sm text-brand-100">062 261 5155</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="bg-white/20 p-3 rounded-lg"><i class="fa-solid fa-envelope"></i></div>
+                                <div>
+                                    <h5 class="font-bold">อีเมล</h5>
+                                    <p class="text-sm text-brand-100">sales@swkfishscales.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-10 flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white hover:text-brand-600 transition hover:scale-110"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white hover:text-brand-600 transition hover:scale-110"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white hover:text-brand-600 transition hover:scale-110"><i class="fa-brands fa-line"></i></a>
+                    </div>
+                </div>
+
+                <!-- QR Code & Page Side (Updated) -->
+                <div class="md:w-7/12 p-10 flex flex-col items-center justify-center bg-gray-50/50">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-8">ช่องทางติดต่อออนไลน์</h3>
+                    
+                    <div class="flex flex-col md:flex-row items-center gap-8 w-full justify-center">
+                        <!-- QR Code Section -->
+                        <div class="flex flex-col items-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+                            <div class="w-48 h-48 bg-white p-2 rounded-lg mb-4 border border-gray-100">
+                                <!-- Placeholder QR Code -->
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://line.me/ti/p/~swkfishscales" alt="Line QR Code" class="w-full h-full object-contain">
+                            </div>
+                            <div class="text-center">
+                                <div class="flex items-center justify-center gap-2 mb-1">
+                                    <i class="fa-brands fa-line text-green-500 text-2xl"></i>
+                                    <p class="font-bold text-gray-800 text-lg">LINE Official</p>
+                                </div>
+                                <p class="text-sm text-gray-500">สแกนเพื่อสอบถามข้อมูลทันที</p>
+                            </div>
+                        </div>
+
+                        <!-- Divider Text (visible on mobile) -->
+                        <div class="md:hidden text-gray-400 font-medium">หรือ</div>
+
+                        <!-- Facebook Page Section -->
+                        <a href="#" class="group flex flex-col items-center justify-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-blue-500 hover:shadow-md transition-all duration-300 w-full md:w-56 h-full min-h-[280px]">
+                            <div class="w-20 h-20 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-4xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 transform group-hover:scale-110">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="font-bold text-gray-800 text-lg mb-1 group-hover:text-blue-600 transition">Facebook Page</p>
+                                <p class="text-sm text-gray-500 mb-4">ติดตามข่าวสารและผลงาน</p>
+                                <span class="inline-block px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-full group-hover:bg-blue-600 group-hover:text-white transition">ไปที่เพจ <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-fish-fins text-brand-500 text-2xl"></i>
+                        <span class="font-bold text-white text-lg">SWK FishScales</span>
+                    </div>
+                    <p class="text-sm mb-4">
+                        มุ่งมั่นสร้างสรรค์ผลิตภัณฑ์จากธรรมชาติ ด้วยนวัตกรรมที่ยั่งยืน เพื่อคุณภาพชีวิตที่ดีกว่า
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">เมนูหลัก</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#home" class="hover:text-brand-500 transition">หน้าแรก</a></li>
+                        <li><a href="#about" class="hover:text-brand-500 transition">เกี่ยวกับเรา</a></li>
+                        <li><a href="#products" class="hover:text-brand-500 transition">ผลิตภัณฑ์</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">กฎหมาย & นโยบาย</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-brand-500 transition">นโยบายความเป็นส่วนตัว</a></li>
+                        <li><a href="#" class="hover:text-brand-500 transition">ข้อกำหนดการใช้งาน</a></li>
+                        <li><a href="#" class="hover:text-brand-500 transition">นโยบายคุกกี้</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">ติดตามข่าวสาร</h4>
+                    <div class="flex gap-2">
+                        <input type="email" placeholder="อีเมลของคุณ" class="bg-gray-800 border-none rounded px-3 py-2 text-sm w-full focus:ring-1 focus:ring-brand-500 text-white transition focus:ring-brand-500">
+                        <button class="bg-brand-600 text-white px-3 py-2 rounded hover:bg-brand-700 transition hover:scale-105"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>&copy; 2024 SWK FishScales Co., Ltd. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" onclick="window.scrollTo(0,0)" class="fixed bottom-8 right-8 bg-brand-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center translate-y-20 opacity-0 transition-all duration-500 hover:bg-brand-700 hover:scale-110 z-40">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- Lightbox Modal (New Feature) -->
+    <div id="lightbox" class="fixed inset-0 z-[100] hidden bg-black/90 flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300" onclick="closeLightbox()">
+        <button class="absolute top-6 right-6 text-white text-5xl hover:text-gray-300 focus:outline-none z-[101]">&times;</button>
+        <img id="lightbox-img" src="" class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transform scale-95 transition-transform duration-300" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // --- 1. Mobile Menu Toggle ---
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // --- 2. Navbar Scroll Effect & Back to Top ---
+        const navbar = document.getElementById('navbar');
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.replace('bg-white/95', 'bg-white/100');
+            } else {
+                navbar.classList.remove('shadow-md');
+                navbar.classList.replace('bg-white/100', 'bg-white/95');
+            }
+
+            // Back to top Logic
+            if (window.scrollY > 500) {
+                backToTopBtn.classList.remove('translate-y-20', 'opacity-0');
+            } else {
+                backToTopBtn.classList.add('translate-y-20', 'opacity-0');
+            }
+        });
+
+        // --- 3. Intersection Observer for Fade In Animations ---
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- 4. Bubble Animation Generator ---
+        function createBubbles() {
+            const container = document.getElementById('bubbles-container');
+            const bubbleCount = 20;
+
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // Random size
+                const size = Math.random() * 40 + 10 + 'px';
+                bubble.style.width = size;
+                bubble.style.height = size;
+                
+                // Random position
+                bubble.style.left = Math.random() * 100 + '%';
+                
+                // Random animation duration and delay
+                const duration = Math.random() * 10 + 5 + 's';
+                const delay = Math.random() * 5 + 's';
+                bubble.style.animationDuration = duration;
+                bubble.style.animationDelay = delay;
+                
+                container.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        // --- 5. Accordion Logic ---
+        function toggleAccordion(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            // Toggle current
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                content.classList.remove('active');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Close others (optional - if you want only one open at a time)
+                document.querySelectorAll('.accordion-content').forEach(el => {
+                    el.style.maxHeight = null;
+                    el.classList.remove('active');
+                    el.previousElementSibling.querySelector('i').style.transform = 'rotate(0deg)';
+                });
+
+                content.style.maxHeight = content.scrollHeight + "px";
+                content.classList.add('active');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // --- 6. Form Submission Logic (Removed) ---
+        // ฟังก์ชันนี้ไม่ได้ใช้แล้ว แต่เก็บไว้เผื่อขยายผลในอนาคต หรือสามารถลบออกได้
+        // function showSuccess() {
+        //    document.getElementById('successModal').classList.remove('hidden');
+        // }
+
+        // --- 7. Lightbox Logic (New Feature) ---
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            
+            img.src = src;
+            lightbox.classList.remove('hidden');
+            // Small timeout to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                lightbox.classList.remove('opacity-0');
+                img.classList.remove('scale-95');
+                img.classList.add('scale-100');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden'; // Prevent scrolling background
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            
+            lightbox.classList.add('opacity-0');
+            img.classList.remove('scale-100');
+            img.classList.add('scale-95');
+            
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                img.src = '';
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }, 300);
+        }
+
+        // --- 8. Standards Carousel Logic (New Feature) ---
+        let currentStandardSlide = 0;
+        const standardSlides = document.querySelectorAll('#standards-carousel img');
+        const standardDots = document.querySelectorAll('.standard-dot');
+        let standardInterval;
+
+        function updateStandardCarousel() {
+            // Update Images
+            standardSlides.forEach((slide, index) => {
+                slide.style.opacity = index === currentStandardSlide ? '1' : '0';
+                slide.style.zIndex = index === currentStandardSlide ? '10' : '0'; // Ensure clickability if needed
+            });
+            
+            // Update Dots
+            standardDots.forEach((dot, index) => {
+                if (index === currentStandardSlide) {
+                    dot.classList.remove('bg-white/40');
+                    dot.classList.add('bg-white', 'scale-110');
+                } else {
+                    dot.classList.add('bg-white/40');
+                    dot.classList.remove('bg-white', 'scale-110');
+                }
+            });
+        }
+
+        function changeStandardSlide(direction) {
+            currentStandardSlide = (currentStandardSlide + direction + standardSlides.length) % standardSlides.length;
+            updateStandardCarousel();
+            resetStandardInterval();
+        }
+
+        function setStandardSlide(index) {
+            currentStandardSlide = index;
+            updateStandardCarousel();
+            resetStandardInterval();
+        }
+
+        function resetStandardInterval() {
+            clearInterval(standardInterval);
+            standardInterval = setInterval(() => changeStandardSlide(1), 5000);
+        }
+
+        // Initialize Carousel
+        if (standardSlides.length > 0) {
+            resetStandardInterval();
+        }
+
+    </script>
+</body>
+</html>
