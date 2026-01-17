@@ -41,6 +41,13 @@
                     },
                     animation: {
                         'bounce-slow': 'bounce 2s infinite',
+                        'pan-slow': 'panImage 30s linear infinite alternate',
+                    },
+                    keyframes: {
+                        panImage: {
+                            '0%': { transform: 'scale(1)' },
+                            '100%': { transform: 'scale(1.15)' },
+                        }
                     }
                 }
             }
@@ -61,15 +68,31 @@
             -webkit-text-fill-color: transparent;
         }
         
-        /* Dynamic Typing Cursor - Removed cursor content */
+        /* Dynamic Typing Cursor */
         .typing-cursor::after {
             content: ''; 
         }
 
-        /* Hero Overlay - Restored Parallax */
-        .hero-bg {
+        /* Hero Background Animation Container */
+        .hero-bg-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .hero-bg-image {
+            width: 100%; height: 100%;
             background-image: linear-gradient(to right, rgba(12, 74, 110, 0.9), rgba(12, 74, 110, 0.5)), url('https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=2000&auto=format&fit=crop');
-            background-size: cover; background-position: center; background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Nav Pattern Background */
+        .nav-pattern {
+            background-color: #ffffff;
+            background-image: radial-gradient(#e0f2fe 1.5px, transparent 1.5px), radial-gradient(#e0f2fe 1.5px, #ffffff 1.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
 
         /* Parallax Section */
@@ -111,14 +134,17 @@
 </head>
 <body class="font-sans text-gray-700 bg-gray-50 antialiased relative overflow-x-hidden">
 
-    <!-- Navigation (Solid White) -->
-    <nav class="fixed w-full z-50 bg-white shadow-md transition-all duration-300 py-4" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Navigation (Updated with Pattern & Gradient) -->
+    <nav class="fixed w-full z-50 nav-pattern border-b border-brand-100 shadow-md transition-all duration-300 py-4" id="navbar">
+        <!-- Added a subtle gradient overlay for depth -->
+        <div class="absolute inset-0 bg-gradient-to-r from-white/95 via-brand-50/80 to-white/95 pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="flex justify-between items-center h-16 transition-all duration-300" id="nav-container">
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer group" onclick="window.scrollTo(0,0)">
                     <div class="relative">
-                        <i class="fa-solid fa-fish-fins text-brand-600 text-3xl group-hover:rotate-12 transition-transform duration-300"></i>
+                        <i class="fa-solid fa-fish-fins text-brand-600 text-3xl group-hover:rotate-12 transition-transform duration-300 drop-shadow-sm"></i>
                         <span class="absolute -top-1 -right-1 flex h-3 w-3">
                           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
                           <span class="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
@@ -160,9 +186,14 @@
         </div>
     </nav>
 
-    <!-- Hero Section (Restored to .hero-bg) -->
-    <section id="home" class="relative min-h-[100dvh] flex items-center overflow-hidden hero-bg">
+    <!-- Hero Section (Updated with Animated Background) -->
+    <section id="home" class="relative min-h-[100dvh] flex items-center overflow-hidden">
         
+        <!-- Animated Background Layer -->
+        <div class="hero-bg-container">
+            <div class="hero-bg-image animate-pan-slow"></div>
+        </div>
+
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full pt-28 pb-20">
             <div class="md:w-3/4 fade-in-up">
                 <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight mb-6 drop-shadow-xl">
@@ -187,7 +218,6 @@
                         <span>ผลิตภัณฑ์ของเรา</span>
                         <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                     </a>
-                    <!-- Changed bg-white/10 to bg-transparent border-2 to fix "pale white" issue -->
                     <a href="#contact" class="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full hover:bg-white hover:text-brand-900 transition-all text-center transform hover:-translate-y-1 shadow-lg">
                         ติดต่อสอบถาม
                     </a>
@@ -210,7 +240,9 @@
                     <div class="absolute inset-0 bg-brand-500 rounded-2xl transform rotate-3 transition-transform group-hover:rotate-6 opacity-20"></div>
                     <div class="relative rounded-2xl shadow-2xl overflow-hidden h-[400px] w-full bg-gray-100 group-hover:scale-[1.01] transition-transform duration-500">
                         <div id="standards-carousel" class="w-full h-full relative">
-                            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-100" data-index="0" alt="Lab Testing">
+                            <!-- Modified: Replaced image with new pic.in.th link -->
+                            <!-- Note: If the image does not load, please ensure you are using the 'Direct Link' (ending in .jpg or .png) from the image host site -->
+                            <img src="https://pic.in.th/image/IMG-20190613-130105-Original.ni4XTN" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-100" data-index="0" alt="Standard Quality" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop';">
                             <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=2080&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" data-index="1" alt="Microscope Analysis">
                             <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2070&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-0" data-index="2" alt="Quality Control">
                         </div>
@@ -1046,4 +1078,3 @@
     </script>
 </body>
 </html>"
-
