@@ -38,6 +38,9 @@
                         accent: {
                             gold: '#d4af37',
                         }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
                     }
                 }
             }
@@ -57,10 +60,15 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
+        /* Dynamic Typing Cursor - Removed cursor content */
+        .typing-cursor::after {
+            content: ''; 
+        }
 
-        /* Hero Overlay */
+        /* Hero Overlay - Restored Parallax */
         .hero-bg {
-            background-image: linear-gradient(to right, rgba(12, 74, 110, 0.9), rgba(12, 74, 110, 0.6)), url('https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=2000&auto=format&fit=crop');
+            background-image: linear-gradient(to right, rgba(12, 74, 110, 0.9), rgba(12, 74, 110, 0.5)), url('https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=2000&auto=format&fit=crop');
             background-size: cover; background-position: center; background-attachment: fixed;
         }
 
@@ -103,31 +111,37 @@
 </head>
 <body class="font-sans text-gray-700 bg-gray-50 antialiased relative overflow-x-hidden">
 
-    <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-sm transition-all duration-300" id="navbar">
+    <!-- Navigation (Solid White) -->
+    <nav class="fixed w-full z-50 bg-white shadow-md transition-all duration-300 py-4" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
+            <div class="flex justify-between items-center h-16 transition-all duration-300" id="nav-container">
                 <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
-                    <i class="fa-solid fa-fish-fins text-brand-600 text-3xl animate-pulse"></i>
-                    <div class="flex flex-col">
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer group" onclick="window.scrollTo(0,0)">
+                    <div class="relative">
+                        <i class="fa-solid fa-fish-fins text-brand-600 text-3xl group-hover:rotate-12 transition-transform duration-300"></i>
+                        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
+                        </span>
+                    </div>
+                    <div class="flex flex-col group-hover:scale-105 transition-transform origin-left">
                         <span class="font-bold text-xl text-brand-900 leading-none tracking-tight">SWK</span>
-                        <span class="text-sm text-brand-500 font-medium tracking-widest">FISHSCALES</span>
+                        <span class="text-xs text-brand-500 font-medium tracking-widest uppercase">FishScales</span>
                     </div>
                 </div>
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-8 items-center">
-                    <a href="#home" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">หน้าแรก<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
-                    <a href="#products" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">ผลิตภัณฑ์<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
-                    <a href="#gallery" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">ผลงาน<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
-                    <a href="#standards" class="text-gray-600 hover:text-brand-600 font-medium transition relative group">มาตรฐาน<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
-                    <a href="#contact" class="px-5 py-2.5 bg-brand-600 text-white font-medium rounded-full hover:bg-brand-700 transition shadow-lg shadow-brand-500/30 transform hover:scale-105 active:scale-95">ติดต่อเรา</a>
+                    <a href="#home" class="text-gray-600 hover:text-brand-600 font-medium transition relative group text-sm uppercase tracking-wide">หน้าแรก<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
+                    <a href="#products" class="text-gray-600 hover:text-brand-600 font-medium transition relative group text-sm uppercase tracking-wide">ผลิตภัณฑ์<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
+                    <a href="#gallery" class="text-gray-600 hover:text-brand-600 font-medium transition relative group text-sm uppercase tracking-wide">ผลงาน<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
+                    <a href="#standards" class="text-gray-600 hover:text-brand-600 font-medium transition relative group text-sm uppercase tracking-wide">มาตรฐาน<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 transition-all group-hover:w-full"></span></a>
+                    <a href="#contact" class="px-6 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-medium rounded-full hover:shadow-lg hover:shadow-brand-500/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0">ติดต่อเรา</a>
                 </div>
 
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-brand-600 focus:outline-none transition-transform active:scale-90">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-brand-600 focus:outline-none p-2 rounded-md hover:bg-gray-100 transition">
                         <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
                 </div>
@@ -135,35 +149,53 @@
         </div>
         
         <!-- Mobile Menu Panel -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
-            <div class="px-4 pt-2 pb-6 space-y-2 shadow-lg">
-                <a href="#home" class="block px-3 py-2 text-brand-900 font-medium hover:bg-brand-50 rounded-md">หน้าแรก</a>
-                <a href="#products" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md">ผลิตภัณฑ์</a>
-                <a href="#gallery" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md">ผลงานของเรา</a>
-                <a href="#standards" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md">มาตรฐาน</a>
-                <a href="#contact" class="block px-3 py-2 text-brand-600 font-bold">ติดต่อเรา</a>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t absolute w-full left-0 top-full shadow-lg">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="#home" class="block px-3 py-2 text-brand-900 font-medium hover:bg-brand-50 rounded-md border-l-4 border-brand-500 bg-brand-50/50">หน้าแรก</a>
+                <a href="#products" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md hover:text-brand-600 transition">ผลิตภัณฑ์</a>
+                <a href="#gallery" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md hover:text-brand-600 transition">ผลงานของเรา</a>
+                <a href="#standards" class="block px-3 py-2 text-gray-600 hover:bg-brand-50 rounded-md hover:text-brand-600 transition">มาตรฐาน</a>
+                <a href="#contact" class="block px-3 py-2 text-white bg-brand-600 rounded-md text-center mt-4 shadow-md">ติดต่อเรา</a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="relative min-h-[100dvh] flex items-center hero-bg overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full pt-20 pb-20">
-            <div class="md:w-2/3 fade-in-up">
-                <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight mb-6 drop-shadow-lg">
-                    ยกระดับคุณค่า<span class="whitespace-nowrap">ทรัพยากรทางทะเล</span> <br>
-                    <span class="text-sky-300">สู่มาตรฐานอุตสาหกรรม</span>
+    <!-- Hero Section (Restored to .hero-bg) -->
+    <section id="home" class="relative min-h-[100dvh] flex items-center overflow-hidden hero-bg">
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full pt-28 pb-20">
+            <div class="md:w-3/4 fade-in-up">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-tight mb-6 drop-shadow-xl">
+                    ยกระดับคุณค่า<span class="whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-white to-sky-200">ทรัพยากรทางทะเล</span> <br>
+                    <!-- Typing Effect with Fixed Height Container -->
+                    <span class="inline-block min-h-[1.2em]">
+                        <span class="text-sky-400 typing-cursor" id="typing-text"></span>&nbsp;
+                    </span>
                 </h1>
-                <p class="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl font-light drop-shadow-md">
-                    SWK FishScales ผู้นำด้านการแปรรูปและส่งออกเกล็ดปลาคุณภาพสูง สำหรับอุตสาหกรรมคอลลาเจน อาหารเสริม และเครื่องสำอาง มุ่งมั่นสร้างความยั่งยืนด้วยนวัตกรรม
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="#products" class="px-8 py-4 bg-white text-brand-900 font-bold rounded-full hover:bg-gray-100 transition shadow-lg text-center transform hover:-translate-y-1">ผลิตภัณฑ์ของเรา</a>
-                    <a href="#contact" class="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full hover:bg-white/10 transition text-center transform hover:-translate-y-1">ติดต่อสอบถาม</a>
+                
+                <!-- Improved Readability for Description Text -->
+                <div class="mb-10 max-w-3xl border-l-4 border-sky-400 pl-6 py-6 bg-black/40 backdrop-blur-sm rounded-r-xl shadow-lg">
+                    <p class="text-base md:text-xl text-white font-normal drop-shadow-md leading-relaxed">
+                        SWK FishScales ผู้นำด้านการแปรรูปและส่งออกเกล็ดปลาคุณภาพสูง <br>
+                        สำหรับอุตสาหกรรมคอลลาเจน อาหารเสริม และเครื่องสำอาง <br>
+                        เพื่อส่งต่อวัตถุดิบคุณภาพสูงสู่อุตสาหกรรมสุขภาพ
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 items-start">
+                    <a href="#products" class="px-8 py-4 bg-white text-brand-900 font-bold rounded-full hover:bg-sky-50 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] text-center transform hover:-translate-y-1 flex items-center gap-2 group">
+                        <span>ผลิตภัณฑ์ของเรา</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <!-- Changed bg-white/10 to bg-transparent border-2 to fix "pale white" issue -->
+                    <a href="#contact" class="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full hover:bg-white hover:text-brand-900 transition-all text-center transform hover:-translate-y-1 shadow-lg">
+                        ติดต่อสอบถาม
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none rotate-180 pointer-events-none">
+
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none rotate-180 pointer-events-none z-10">
             <svg class="relative block w-[calc(100%+1.3px)] h-[60px] md:h-[120px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
                 <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="fill-gray-50"></path>
             </svg>
@@ -207,9 +239,11 @@
 
     <!-- Parallax Vision -->
     <section class="py-24 parallax-bg relative flex items-center justify-center text-center">
-        <div class="max-w-4xl mx-auto px-4 z-10 fade-in-up">
-            <i class="fa-solid fa-quote-left text-4xl text-accent-gold mb-6 opacity-80"></i>
-            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">"เราเปลี่ยนสิ่งเหลือใช้จากธรรมชาติ <br>ให้กลายเป็นนวัตกรรมที่ล้ำค่า"</h2>
+        <div class="max-w-6xl mx-auto px-4 z-10 fade-in-up">
+            <!-- Removed Icon above -->
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                <span class="text-yellow-400">"</span>เราเปลี่ยนสิ่งเหลือใช้จากธรรมชาติ <br>ให้กลายเป็นนวัตกรรมที่ล้ำค่า<span class="text-yellow-400">"</span>
+            </h2>
         </div>
     </section>
 
@@ -473,22 +507,22 @@
 
                     <!-- Stats Cards -->
                     <div class="flex flex-wrap justify-center gap-4">
-                        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 flex-1 min-w-[280px] relative">
+                        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] relative">
                             <div class="flex justify-between items-center mb-4"><h3 class="text-lg md:text-xl font-semibold text-emerald-800">จำนวนที่ทำได้วันนี้</h3><div class="bg-emerald-500 p-2 rounded-full text-white"><i class="fa-solid fa-box-open"></i></div></div>
                             <div class="text-center"><p class="text-5xl md:text-6xl font-bold text-emerald-900 mb-2" id="prod-today">0</p><span class="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">กระสอบ</span></div>
                         </div>
-                        <div class="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 flex-1 min-w-[280px] relative">
+                        <div class="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] relative">
                             <div class="flex justify-between items-center mb-4"><h3 class="text-lg md:text-xl font-semibold text-violet-800">จำนวนที่ทำได้ (เดือนนี้)</h3><div class="bg-violet-500 p-2 rounded-full text-white"><i class="fa-solid fa-calendar-days"></i></div></div>
                             <div class="text-center"><p class="text-5xl md:text-6xl font-bold text-violet-900 mb-2" id="prod-month">0</p><span class="bg-violet-500 text-white px-3 py-1 rounded-full text-sm font-medium">กระสอบ</span></div>
                         </div>
-                        <div class="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 flex-1 min-w-[280px] relative">
+                        <div class="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] relative">
                             <div class="flex justify-between items-center mb-4"><h3 class="text-lg md:text-xl font-semibold text-sky-800">จำนวนของพร้อมส่ง</h3><div class="bg-sky-500 p-2 rounded-full text-white"><i class="fa-solid fa-arrow-trend-up"></i></div></div>
                             <div class="text-center"><p class="text-5xl md:text-6xl font-bold text-sky-900 mb-2" id="prod-stock">0</p><span class="bg-sky-500 text-white px-3 py-1 rounded-full text-sm font-medium">กระสอบ</span></div>
                         </div>
                     </div>
 
                     <!-- Input Form -->
-                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
+                    <div class="bg-white backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
                         <div class="flex items-center gap-3 mb-8">
                             <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-2xl text-white"><i class="fa-solid fa-flask text-xl"></i></div>
                             <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">บันทึกการผลิตวันนี้</h2>
@@ -504,7 +538,7 @@
                     </div>
 
                     <!-- History & Chart -->
-                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
+                    <div class="bg-white backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
                         <div class="flex items-center gap-3 mb-8">
                             <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 rounded-2xl text-white"><i class="fa-solid fa-clock-rotate-left text-xl"></i></div>
                             <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">รายการผลิตย้อนหลัง</h2>
@@ -556,7 +590,7 @@
                     </div>
 
                     <!-- Inventory Form -->
-                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
+                    <div class="bg-white backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
                         <div class="flex items-center gap-3 mb-8">
                             <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-2xl text-white"><i class="fa-solid fa-file-pen text-xl"></i></div>
                             <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">บันทึกรายการสินค้า</h2>
@@ -604,7 +638,7 @@
                     </div>
 
                     <!-- Inventory History -->
-                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
+                    <div class="bg-white backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
                         <div class="flex items-center gap-3 mb-8">
                             <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-2xl text-white"><i class="fa-solid fa-table-list text-xl"></i></div>
                             <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">รายการสินค้าทั้งหมด</h2>
@@ -632,10 +666,19 @@
         btn.addEventListener('click', () => { menu.classList.toggle('hidden'); });
 
         const navbar = document.getElementById('navbar');
+        const navContainer = document.getElementById('nav-container');
         const backToTopBtn = document.getElementById('back-to-top');
+        
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 10) { navbar.classList.add('shadow-md'); navbar.classList.replace('bg-white/95', 'bg-white/100'); } 
-            else { navbar.classList.remove('shadow-md'); navbar.classList.replace('bg-white/100', 'bg-white/95'); }
+            if (window.scrollY > 10) { 
+                navbar.classList.add('shadow-md'); 
+                navbar.classList.remove('py-4'); // Shrink navbar
+                navContainer.classList.replace('h-16', 'h-14'); // Shrink container
+            } else { 
+                navbar.classList.remove('shadow-md'); 
+                navbar.classList.add('py-4'); // Expand navbar
+                navContainer.classList.replace('h-14', 'h-16'); // Expand container
+            }
             if (window.scrollY > 500) { backToTopBtn.classList.remove('translate-y-20', 'opacity-0'); } 
             else { backToTopBtn.classList.add('translate-y-20', 'opacity-0'); }
         });
@@ -659,6 +702,45 @@
             }
         }
         createBubbles();
+
+        // --- Typing Effect Logic ---
+        // Modified: Changed to only "สู่มาตรฐานอุตสาหกรรม" as requested
+        const textsToType = ["สู่มาตรฐานอุตสาหกรรม"];
+        let txtIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typeSpeed = 100;
+        const deleteSpeed = 50;
+        const waitBeforeDelete = 2000;
+        const typingElement = document.getElementById('typing-text');
+
+        function type() {
+            const currentText = textsToType[txtIndex];
+            
+            if (isDeleting) {
+                typingElement.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingElement.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeDelay = isDeleting ? deleteSpeed : typeSpeed;
+
+            if (!isDeleting && charIndex === currentText.length) {
+                typeDelay = waitBeforeDelete;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                txtIndex = (txtIndex + 1) % textsToType.length;
+                typeDelay = 500;
+            }
+
+            setTimeout(type, typeDelay);
+        }
+        
+        // Start typing on load
+        document.addEventListener('DOMContentLoaded', type);
 
         function toggleAccordion(button) {
             const content = button.nextElementSibling;
