@@ -539,10 +539,7 @@
                         <!-- Fixed Y-Axis Layout -->
                         <div class="flex w-full h-[450px] border border-gray-100 rounded-xl overflow-hidden relative bg-white">
                             
-                            <!-- Y Axis Label (Floating) -->
-                            <div class="absolute top-1/2 left-2 transform -translate-y-1/2 -rotate-90 origin-left text-gray-400 text-xs font-bold z-30 pointer-events-none tracking-wider">
-                                จำนวน
-                            </div>
+                            <!-- Removed Floating Labels "จำนวน" and "วันที่" as requested -->
 
                             <!-- Fixed Y Axis Column -->
                             <div class="w-[70px] h-full flex-shrink-0 relative z-20 bg-white pb-12">
@@ -552,11 +549,6 @@
                             <!-- Scrollable X Axis Column -->
                             <div id="daily-chart-scroller" class="flex-grow h-full overflow-x-auto overflow-y-hidden relative z-10 bg-white custom-scrollbar pb-12"> 
                                 <div id="chart-daily-production" class="h-full"></div>
-                            </div>
-
-                            <!-- X Axis Label (Floating) -->
-                            <div class="absolute bottom-1 left-[50%] transform -translate-x-1/2 text-gray-400 text-xs font-bold z-30 pointer-events-none tracking-wider ml-8">
-                                วันที่
                             </div>
                         </div>
                     </div>
@@ -690,9 +682,10 @@
                         <!-- Table -->
                         <div class="overflow-auto max-h-[500px] rounded-xl border border-gray-200 bg-white mb-8">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-100 text-gray-600 text-sm sticky top-0 font-semibold z-10">
+                                <!-- Increased font size from text-sm to text-base -->
+                                <thead class="bg-gray-100 text-gray-600 text-base sticky top-0 font-semibold z-10">
                                     <tr>
-                                        <th class="p-4 whitespace-nowrap">วันที่</th>
+                                        <th class="p-4 whitespace-nowrap">วันที่/เวลา</th>
                                         <th class="p-4">ชื่อ/สถานะ</th>
                                         <th class="p-4 text-center">จำนวน (KG)</th>
                                         <th class="p-4 text-center">รายละเอียด</th>
@@ -912,7 +905,7 @@
                 });
             };
 
-            const yearOpts = years.map(y => ({value: y, text: y}));
+            const yearOpts = years.map(y => ({value: y, text: y + 543}));
             const monthOpts = Array.from({length:12}, (_,i) => ({value: i+1, text: getThaiMonthName(i+1)}));
 
             // Table Filters
@@ -1561,7 +1554,10 @@
             const tbody = document.getElementById('table-inv-body'); tbody.innerHTML = '';
             filtered.forEach(r => {
                 const d = parseDate(r.timestamp);
-                const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
+                // Updated Date/Time format with BE Year and HH:mm
+                const datePart = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
+                const timePart = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} น.`;
+                const ds = `${datePart} ${timePart}`;
                 
                 // Image Button logic -> Details Button
                 let detailBtnClass = "text-gray-400 cursor-not-allowed";
@@ -1574,23 +1570,24 @@
                      detailOnClick = `onclick="openAdminImageModal(${imgJson})"`;
                 }
 
-                const detailBtn = `<button ${detailOnClick} class="${detailBtnClass} font-medium text-sm flex items-center justify-center gap-1 mx-auto transition-colors"><i class="${detailIcon}"></i> ดูรายละเอียด</button>`;
+                const detailBtn = `<button ${detailOnClick} class="${detailBtnClass} font-medium text-base flex items-center justify-center gap-1 mx-auto transition-colors"><i class="${detailIcon}"></i> ดูรายละเอียด</button>`;
 
                 // Amount Column logic
                 let amountHtml = `<span>${r.quantity.toLocaleString()} กิโลกรัม</span>`;
                 if (r.status === 'ขายออก') {
                     const bags = r.quantity / 10;
-                    amountHtml += `<div class="text-xs text-gray-500 mt-0.5">(${bags.toLocaleString()} กระสอบ)</div>`;
+                    amountHtml += `<div class="text-sm text-gray-500 mt-0.5">(${bags.toLocaleString()} กระสอบ)</div>`;
                 }
 
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-gray-50 hover:bg-gray-50 transition text-sm'; // Set common font size
+                // Increased font size from text-sm to text-base (16px)
+                tr.className = 'border-b border-gray-50 hover:bg-gray-50 transition text-base'; 
                 tr.innerHTML = `
                     <td class="p-4 text-gray-700 align-middle whitespace-nowrap">${ds}</td>
                     <td class="p-4 text-gray-700 align-middle">
                         <div class="flex items-center flex-wrap gap-2">
                             <span>${r.name}</span>
-                            <span class="text-xs px-2 py-0.5 rounded border ${r.status==='ซื้อเข้า'?'bg-green-50 text-green-700 border-green-100':'bg-red-50 text-red-700 border-red-100'}">${r.status}</span>
+                            <span class="text-sm px-2 py-0.5 rounded border ${r.status==='ซื้อเข้า'?'bg-green-50 text-green-700 border-green-100':'bg-red-50 text-red-700 border-red-100'}">${r.status}</span>
                         </div>
                     </td>
                     <td class="p-4 text-center text-gray-700 align-middle">
