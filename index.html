@@ -669,15 +669,17 @@
 
                     <!-- Inventory History (Table) -->
                     <div class="bg-white backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10">
-                        <div class="flex items-center justify-between flex-wrap gap-4 mb-8">
+                        <div class="flex flex-col gap-4 mb-8">
                             <div class="flex items-center gap-3">
                                 <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-2xl text-white"><i class="fa-solid fa-table-list text-xl"></i></div>
                                 <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">รายการสินค้าทั้งหมด</h2>
                             </div>
-                            <div class="flex gap-2 flex-wrap justify-end">
-                                <select id="inv-filter-year" onchange="renderInventoryView()" class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"></select>
-                                <select id="inv-filter-month" onchange="renderInventoryView()" class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"></select>
-                                <select id="inv-filter-status" onchange="renderInventoryView()" class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base">
+                            
+                            <!-- Filters moved below title -->
+                            <div class="flex gap-3 flex-wrap items-center bg-gray-50 p-3 rounded-xl border border-gray-100 self-start">
+                                <select id="inv-filter-year" onchange="renderInventoryView()" class="px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm bg-white"></select>
+                                <select id="inv-filter-month" onchange="renderInventoryView()" class="px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm bg-white"></select>
+                                <select id="inv-filter-status" onchange="renderInventoryView()" class="px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm bg-white">
                                     <option value="">ทุกสถานะ</option>
                                     <option value="ซื้อเข้า">ซื้อเข้า</option>
                                     <option value="ขายออก">ขายออก</option>
@@ -687,9 +689,15 @@
                         
                         <!-- Table -->
                         <div class="overflow-auto max-h-[500px] rounded-xl border border-gray-200 bg-white mb-8">
-                            <table class="w-full text-left">
-                                <thead class="bg-gray-100 text-gray-600 text-sm sticky top-0 font-semibold">
-                                    <tr><th class="p-4">วันที่</th><th class="p-4">ชื่อ/สถานะ</th><th class="p-4 text-center">จำนวน (KG)</th><th class="p-4 text-center">หลักฐาน</th><th class="p-4"></th></tr>
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-100 text-gray-600 text-sm sticky top-0 font-semibold z-10">
+                                    <tr>
+                                        <th class="p-4 whitespace-nowrap">วันที่</th>
+                                        <th class="p-4">ชื่อ/สถานะ</th>
+                                        <th class="p-4 text-center">จำนวน (KG)</th>
+                                        <th class="p-4 text-center">รายละเอียด</th>
+                                        <th class="p-4"></th>
+                                    </tr>
                                 </thead>
                                 <tbody id="table-inv-body" class="divide-y divide-gray-100 text-gray-700"></tbody>
                             </table>
@@ -1527,6 +1535,7 @@
             let inKg = 0, outKg = 0;
             appData.records.forEach(r => {
                 const d = parseDate(r.timestamp);
+                // OLD: const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} น.`;
                 if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
                     if (r.status === 'ซื้อเข้า') inKg += r.quantity; else if (r.status === 'ขายออก') outKg += r.quantity;
                 }
@@ -1554,24 +1563,41 @@
                 const d = parseDate(r.timestamp);
                 const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
                 
-                // Image Button logic
-                let imgBtn = '<span class="text-gray-300">-</span>';
+                // Image Button logic -> Details Button
+                let detailBtnClass = "text-gray-400 cursor-not-allowed";
+                let detailOnClick = "";
+                let detailIcon = "fa-solid fa-circle-info";
+                
                 if (r.images && r.images.length > 0) {
-                    const imgJson = JSON.stringify(r.images).replace(/"/g, '&quot;');
-                    imgBtn = `<button onclick="openAdminImageModal(${imgJson})" class="text-blue-500 hover:text-blue-700 font-medium text-sm flex items-center justify-center gap-1 mx-auto"><i class="fa-regular fa-image"></i> ดูรูป (${r.images.length})</button>`;
+                     const imgJson = JSON.stringify(r.images).replace(/"/g, '&quot;');
+                     detailBtnClass = "text-brand-600 hover:text-brand-800 hover:underline";
+                     detailOnClick = `onclick="openAdminImageModal(${imgJson})"`;
+                }
+
+                const detailBtn = `<button ${detailOnClick} class="${detailBtnClass} font-medium text-sm flex items-center justify-center gap-1 mx-auto transition-colors"><i class="${detailIcon}"></i> ดูรายละเอียด</button>`;
+
+                // Amount Column logic
+                let amountHtml = `<span>${r.quantity.toLocaleString()} กิโลกรัม</span>`;
+                if (r.status === 'ขายออก') {
+                    const bags = r.quantity / 10;
+                    amountHtml += `<div class="text-xs text-gray-500 mt-0.5">(${bags.toLocaleString()} กระสอบ)</div>`;
                 }
 
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-gray-50 hover:bg-gray-50 transition';
+                tr.className = 'border-b border-gray-50 hover:bg-gray-50 transition text-sm'; // Set common font size
                 tr.innerHTML = `
-                    <td class="p-4 text-gray-600 text-sm">${ds}</td>
-                    <td class="p-4">
-                        <div class="font-bold text-gray-800">${r.name}</div>
-                        <span class="text-xs px-2 py-0.5 rounded ${r.status==='ซื้อเข้า'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${r.status}</span>
+                    <td class="p-4 text-gray-700 align-middle whitespace-nowrap">${ds}</td>
+                    <td class="p-4 text-gray-700 align-middle">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <span>${r.name}</span>
+                            <span class="text-xs px-2 py-0.5 rounded border ${r.status==='ซื้อเข้า'?'bg-green-50 text-green-700 border-green-100':'bg-red-50 text-red-700 border-red-100'}">${r.status}</span>
+                        </div>
                     </td>
-                    <td class="p-4 text-center font-bold text-gray-700">${r.quantity.toLocaleString()}</td>
-                    <td class="p-4 text-center">${imgBtn}</td>
-                    <td class="p-4 text-right"><button onclick="deleteData('${r.id}', 'Records')" class="text-gray-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full"><i class="fa-solid fa-trash-can"></i></button></td>
+                    <td class="p-4 text-center text-gray-700 align-middle">
+                        ${amountHtml}
+                    </td>
+                    <td class="p-4 text-center align-middle">${detailBtn}</td>
+                    <td class="p-4 text-right align-middle"><button onclick="deleteData('${r.id}', 'Records')" class="text-gray-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"><i class="fa-solid fa-trash-can"></i></button></td>
                 `;
                 tbody.appendChild(tr);
             });
