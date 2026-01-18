@@ -115,24 +115,26 @@
             100% { transform: translateY(-120vh); opacity: 0; }
         }
 
-        /* Modern Colorful Scrollbar for Chart */
+        /* Modern Colorful Scrollbar for Chart - ENLARGED & SPACED */
         #daily-chart-scroller::-webkit-scrollbar {
-            height: 14px;
+            height: 18px; 
         }
         #daily-chart-scroller::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border-radius: 10px;
-            border: 3px solid transparent;
+            border-radius: 9px;
+            margin-top: 5px; /* Spacing handled by container height */
+            border: 4px solid transparent;
             background-clip: content-box;
         }
         #daily-chart-scroller::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, #38bdf8, #0ea5e9);
-            border-radius: 10px;
-            border: 3px solid transparent;
+            background: linear-gradient(90deg, #a78bfa, #7c3aed);
+            border-radius: 9px;
+            border: 4px solid transparent;
             background-clip: content-box;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
         }
         #daily-chart-scroller::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(45deg, #0284c7, #0369a1);
+            background: linear-gradient(90deg, #7c3aed, #6d28d9);
         }
 
         /* Custom Scrollbar Global */
@@ -428,35 +430,43 @@
                         <p class="text-lg md:text-xl text-gray-600">เกล็ดปลาตากแห้ง</p>
                     </div>
 
-                    <!-- Production Stats -->
+                    <!-- Production Stats (Centered Numbers + Right Unit) -->
                     <div class="flex flex-wrap justify-center gap-4">
-                        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] flex flex-col justify-between h-36">
-                            <div class="flex justify-between items-start">
+                        <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] h-40 relative flex flex-col">
+                            <div class="flex justify-between items-start z-10">
                                 <h3 class="text-lg md:text-xl font-semibold text-emerald-800">ทำได้วันนี้</h3>
                                 <div class="bg-emerald-500 p-2 rounded-full text-white"><i class="fa-solid fa-box-open"></i></div>
                             </div>
-                            <div class="flex items-baseline justify-end gap-2">
+                            <div class="flex-grow flex items-center justify-center">
                                 <p class="text-5xl md:text-6xl font-bold text-emerald-900" id="prod-today">0</p>
+                            </div>
+                            <div class="absolute bottom-4 right-6 z-10">
                                 <span class="text-lg text-emerald-700 font-medium">กระสอบ</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] flex flex-col justify-between h-36">
-                            <div class="flex justify-between items-start">
+
+                        <div class="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] h-40 relative flex flex-col">
+                            <div class="flex justify-between items-start z-10">
                                 <h3 class="text-lg md:text-xl font-semibold text-violet-800">ทำได้เดือนนี้</h3>
                                 <div class="bg-violet-500 p-2 rounded-full text-white"><i class="fa-solid fa-calendar-days"></i></div>
                             </div>
-                            <div class="flex items-baseline justify-end gap-2">
+                            <div class="flex-grow flex items-center justify-center">
                                 <p class="text-5xl md:text-6xl font-bold text-violet-900" id="prod-month">0</p>
+                            </div>
+                            <div class="absolute bottom-4 right-6 z-10">
                                 <span class="text-lg text-violet-700 font-medium">กระสอบ</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] flex flex-col justify-between h-36">
-                            <div class="flex justify-between items-start">
+
+                        <div class="bg-gradient-to-br from-sky-100 to-sky-200 border border-sky-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] h-40 relative flex flex-col">
+                            <div class="flex justify-between items-start z-10">
                                 <h3 class="text-lg md:text-xl font-semibold text-sky-800">ของพร้อมส่ง</h3>
                                 <div class="bg-sky-500 p-2 rounded-full text-white"><i class="fa-solid fa-arrow-trend-up"></i></div>
                             </div>
-                            <div class="flex items-baseline justify-end gap-2">
+                            <div class="flex-grow flex items-center justify-center">
                                 <p class="text-5xl md:text-6xl font-bold text-sky-900" id="prod-stock">0</p>
+                            </div>
+                            <div class="absolute bottom-4 right-6 z-10">
                                 <span class="text-lg text-sky-700 font-medium">กระสอบ</span>
                             </div>
                         </div>
@@ -514,8 +524,7 @@
                             <!-- Filters moved below title with Checkboxes -->
                             <div class="flex flex-wrap gap-4 items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
                                 <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="chk-daily-year" checked onchange="toggleDailyChartFilters()" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300">
-                                    <label for="chk-daily-year" class="text-sm font-medium text-gray-700">ปี:</label>
+                                    <span class="text-sm font-medium text-gray-700">ปี:</span>
                                     <select id="prod-daily-filter-year" onchange="renderDailyProductionChart()" class="px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-emerald-500 text-sm bg-white min-w-[80px]"></select>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -528,16 +537,16 @@
                         </div>
                         
                         <!-- Fixed Y-Axis Layout -->
-                        <div class="flex w-full h-[400px] border border-gray-100 rounded-xl overflow-hidden relative">
+                        <div class="flex w-full h-[450px] border border-gray-100 rounded-xl overflow-hidden relative"> <!-- Increased container height -->
                             <!-- Fixed Y Axis Column -->
                             <div class="w-[60px] h-full bg-white border-r border-gray-100 flex-shrink-0 relative z-20 shadow-[4px_0_12px_rgba(0,0,0,0.05)]">
                                 <!-- Offset chart to hide bars and show only axis -->
-                                <div id="chart-daily-y" class="absolute -top-3 -left-2 w-[80px] h-full"></div> 
+                                <div id="chart-daily-y" class="absolute -top-3 -left-2 w-[80px] h-[380px]"></div> 
                             </div>
                             
                             <!-- Scrollable X Axis Column -->
-                            <div id="daily-chart-scroller" class="flex-grow h-full overflow-x-auto overflow-y-hidden relative z-10 bg-white custom-scrollbar">
-                                <div id="chart-daily-production" class="h-full"></div>
+                            <div id="daily-chart-scroller" class="flex-grow h-full overflow-x-auto overflow-y-hidden relative z-10 bg-white custom-scrollbar pb-4"> 
+                                <div id="chart-daily-production" class="h-[380px]"></div>
                             </div>
                         </div>
                     </div>
@@ -565,24 +574,41 @@
 
                     <!-- Inventory Stats -->
                     <div class="flex flex-wrap justify-center gap-4">
-                        <div class="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] flex flex-col justify-between h-36">
-                            <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-green-800">ซื้อเข้าเดือนนี้</h3><div class="bg-green-500 p-2 rounded-full text-white"><i class="fa-solid fa-arrow-trend-up"></i></div></div>
-                            <div class="flex items-baseline justify-end gap-2">
+                        <div class="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] h-40 relative flex flex-col">
+                            <div class="flex justify-between items-start z-10">
+                                <h3 class="text-xl font-semibold text-green-800">ซื้อเข้าเดือนนี้</h3>
+                                <div class="bg-green-500 p-2 rounded-full text-white"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                            </div>
+                            <div class="flex-grow flex items-center justify-center">
                                 <p class="text-5xl font-bold text-green-900" id="inv-in">0</p>
+                            </div>
+                            <div class="absolute bottom-4 right-6 z-10">
                                 <span class="text-lg text-green-700 font-medium">KG</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-br from-red-100 to-red-200 border border-red-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] flex flex-col justify-between h-36">
-                            <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-red-800">ขายออกเดือนนี้</h3><div class="bg-red-500 p-2 rounded-full text-white"><i class="fa-solid fa-arrow-trend-down"></i></div></div>
-                            <div class="flex items-baseline justify-end gap-2">
+
+                        <div class="bg-gradient-to-br from-red-100 to-red-200 border border-red-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] h-40 relative flex flex-col">
+                            <div class="flex justify-between items-start z-10">
+                                <h3 class="text-xl font-semibold text-red-800">ขายออกเดือนนี้</h3>
+                                <div class="bg-red-500 p-2 rounded-full text-white"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                            </div>
+                            <div class="flex-grow flex items-center justify-center">
                                 <p class="text-5xl font-bold text-red-900" id="inv-out">0</p>
+                            </div>
+                            <div class="absolute bottom-4 right-6 z-10">
                                 <span class="text-lg text-red-700 font-medium">KG</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] flex flex-col justify-between h-36">
-                            <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-violet-800">ของพร้อมส่ง</h3><div class="bg-violet-500 p-2 rounded-full text-white"><i class="fa-solid fa-box-open"></i></div></div>
-                            <div class="flex items-baseline justify-end gap-2">
+
+                        <div class="bg-gradient-to-br from-violet-100 to-violet-200 border border-violet-300 p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex-1 min-w-[280px] h-40 relative flex flex-col">
+                            <div class="flex justify-between items-start z-10">
+                                <h3 class="text-xl font-semibold text-violet-800">ของพร้อมส่ง</h3>
+                                <div class="bg-violet-500 p-2 rounded-full text-white"><i class="fa-solid fa-box-open"></i></div>
+                            </div>
+                            <div class="flex-grow flex items-center justify-center">
                                 <p class="text-5xl font-bold text-violet-900" id="inv-stock">0</p>
+                            </div>
+                            <div class="absolute bottom-4 right-6 z-10">
                                 <span class="text-lg text-violet-700 font-medium">กระสอบ</span>
                             </div>
                         </div>
@@ -900,13 +926,26 @@
         }
 
         function toggleDailyChartFilters() {
-            const yearChk = document.getElementById('chk-daily-year');
             const monthChk = document.getElementById('chk-daily-month');
             const yearSel = document.getElementById('prod-daily-filter-year');
             const monthSel = document.getElementById('prod-daily-filter-month');
 
-            yearSel.disabled = !yearChk.checked;
-            monthSel.disabled = !monthChk.checked;
+            // If Month Checkbox is Unchecked -> We show YEARLY AGGREGATE
+            // So we disable month selector. Year selector stays enabled to filter which years to show? 
+            // The requirement says: "show data for each year instead". That implies showing All Years.
+            // So if month is unchecked, maybe we don't need filters at all, or just year range?
+            // Let's disable both for "All Years" view, or keep Year enabled to select specific year?
+            // "Show data for each year" usually means a bar for 2023, 2024, 2025...
+            
+            if (monthChk.checked) {
+                // Daily view
+                yearSel.disabled = false;
+                monthSel.disabled = false;
+            } else {
+                // Yearly view (All years)
+                yearSel.disabled = true;
+                monthSel.disabled = true;
+            }
 
             renderDailyProductionChart();
         }
@@ -1219,25 +1258,39 @@
             const dailyMap = {};
             
             // Get Checkbox States
-            const useYear = document.getElementById('chk-daily-year').checked;
             const useMonth = document.getElementById('chk-daily-month').checked;
 
             // Get Filters
             const yearVal = document.getElementById('prod-daily-filter-year').value;
             const monthVal = document.getElementById('prod-daily-filter-month').value;
             
-            // Logic:
-            // 1. If no filters: Show recent daily trend (default timeline style)
-            // 2. If Year Checked && Month 'all': Show Monthly Aggregation for that Year
-            // 3. If Year Checked && Month Specific: Show Daily for that Month
-            // 4. If Year Checked && Month Unchecked: Fallback to Monthly Aggr? or Daily? -> Monthly is better summary.
-
             const isAllMonths = monthVal === 'all';
             const selectedYear = parseInt(yearVal) || new Date().getFullYear();
             const selectedMonth = parseInt(monthVal); 
 
-            // --- SCENARIO: MONTHLY AGGREGATION (Year Checked, Month Unchecked or 'All') ---
-            if (useYear && (!useMonth || isAllMonths)) {
+            // --- SCENARIO: YEARLY AGGREGATION (Month Unchecked) ---
+            if (!useMonth) {
+                const yearMap = {};
+                if (rawData.length > 0) {
+                    rawData.forEach(item => {
+                        const d = parseDate(item.timestamp);
+                        const y = d.getFullYear();
+                        yearMap[y] = (yearMap[y] || 0) + item.bags;
+                    });
+                }
+                
+                // Sort years
+                const years = Object.keys(yearMap).sort();
+                const seriesData = years.map(y => yearMap[y]);
+                const categories = years.map(y => (parseInt(y)+543).toString()); // Thai Year
+
+                // Render Chart (Fit to screen)
+                renderApexChart(categories, seriesData, false);
+                return;
+            }
+
+            // --- SCENARIO: MONTHLY AGGREGATION (Year Selected, Month 'All') ---
+            if (isAllMonths) {
                 const monthMap = {};
                 if (rawData.length > 0) {
                     rawData.forEach(item => {
@@ -1255,8 +1308,8 @@
                     seriesData.push(monthMap[i] || 0);
                 }
 
-                // Render Chart (Standard view, no scroll needed for 12 bars usually, but using scroll structure is fine)
-                renderApexChart(chartCategories, seriesData, false); // False = fit to screen
+                // Render Chart (Fit to screen)
+                renderApexChart(chartCategories, seriesData, false); 
                 return;
             }
 
@@ -1267,19 +1320,18 @@
             
             let isCurrentMonth = false;
 
-            if (useYear && useMonth && !isAllMonths) {
+            if (useMonth && !isAllMonths) {
                 // Specific Month View
                 startDate = new Date(selectedYear, selectedMonth - 1, 1);
                 endDate = new Date(selectedYear, selectedMonth, 0); // Last day of month
                 isCurrentMonth = (today.getFullYear() === selectedYear && (today.getMonth() + 1) === selectedMonth);
             } else {
-                // Default / No Filter: Show recent context (e.g. start 15 days ago to 5 days future)
-                // Or find data range. Let's stick to the "Recent Timeline" logic for smoothness
+                // Should not reach here if logic is correct, but fallback
                 startDate = new Date(today);
                 startDate.setDate(startDate.getDate() - 15);
                 endDate = new Date(today);
                 endDate.setDate(endDate.getDate() + 5);
-                isCurrentMonth = true; // To center 'today'
+                isCurrentMonth = true;
             }
 
             // Prepare Daily Data Map
@@ -1287,9 +1339,6 @@
                 rawData.forEach(item => {
                     const d = parseDate(item.timestamp);
                     d.setHours(0,0,0,0);
-                    // Filter if needed (for default view we filter by range implicitly by map key lookup)
-                    // For specific month view, we just need to ensure year/month match which date range handles
-                    
                     const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                     dailyMap[key] = (dailyMap[key] || 0) + item.bags;
                 });
@@ -1388,7 +1437,7 @@
                     animations: { enabled: false },
                     parentHeightOffset: 0
                 },
-                colors: ['#10b981'],
+                colors: ['#8b5cf6'], // Purple
                 plotOptions: {
                     bar: { 
                         borderRadius: 4, 
@@ -1408,13 +1457,13 @@
                         style: { fontSize: '12px' },
                         formatter: function(val) {
                             if (!val) return "";
-                            // Check if it's a date string (YYYY-MM-DD) or Month Name
+                            // Check if it's a date string (YYYY-MM-DD) or Month Name/Year
                             if (val.indexOf && val.indexOf('-') > -1) {
                                 const d = new Date(val);
                                 if (isNaN(d.getTime())) return val;
                                 return d.getDate(); // Just Day Number
                             }
-                            return val; // Return as is (Month Name)
+                            return val; // Return as is (Month Name or Year)
                         }
                     },
                     tooltip: { enabled: false },
@@ -1431,17 +1480,6 @@
                 tooltip: { 
                     theme: 'light',
                     y: { formatter: (val) => val + " กระสอบ" }
-                },
-                annotations: {
-                    xaxis: centerIndex !== -1 ? [{
-                        x: categories[centerIndex],
-                        borderColor: '#0ea5e9',
-                        label: {
-                            borderColor: '#0ea5e9',
-                            style: { color: '#fff', background: '#0ea5e9', fontSize: '12px', padding: { left: 5, right: 5, top: 2, bottom: 2 } },
-                            text: 'วันนี้'
-                        }
-                    }] : []
                 }
             });
             
